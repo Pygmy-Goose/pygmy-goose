@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// function/scalar_function/round.hpp
+// function/scalar_function/regexp_replace.hpp
 //
 //
 //===----------------------------------------------------------------------===//
@@ -14,34 +14,30 @@
 namespace duckdb {
 namespace function {
 
-void round_function(ExpressionExecutor &exec, Vector inputs[], size_t input_count, BoundFunctionExpression &expr,
-                    Vector &result);
-bool round_matches_arguments(vector<SQLType> &arguments);
-SQLType round_get_return_type(vector<SQLType> &arguments);
+void regexp_replace_function(ExpressionExecutor &exec, Vector inputs[], size_t input_count,
+                             BoundFunctionExpression &expr, Vector &result);
+bool regexp_replace_matches_arguments(vector<SQLType> &arguments);
+SQLType regexp_replace_get_return_type(vector<SQLType> &arguments);
 
-class RoundFunction {
+class RegexpReplaceFunction {
 public:
 	static const char *GetName() {
-		return "round";
+		return "regexp_replace";
 	}
 
 	static scalar_function_t GetFunction() {
-		return round_function;
+		return regexp_replace_function;
 	}
 
 	static matches_argument_function_t GetMatchesArgumentFunction() {
-		return round_matches_arguments;
+		return regexp_replace_matches_arguments;
 	}
 
 	static get_return_type_function_t GetReturnTypeFunction() {
-		return round_get_return_type;
+		return regexp_replace_get_return_type;
 	}
 
 	static bind_scalar_function_t GetBindFunction() {
-		return nullptr;
-	}
-
-	static dependency_function_t GetDependencyFunction() {
 		return nullptr;
 	}
 
