@@ -4,107 +4,10 @@
 #include <string>
 #include <thread>
 
+#include "sqlite_db_wrapper.hpp"
+#include "sqlite_stmt_wrapper.hpp"
+
 using namespace std;
-
-static int concatenate_results(void *arg, int ncols, char **vals, char **colnames) {
-	auto &results = *((vector<vector<string>> *)arg);
-	if (results.size() == 0) {
-		results.resize(ncols);
-	}
-	for (int i = 0; i < ncols; i++) {
-		results[i].push_back(vals[i] ? vals[i] : "");
-	}
-	return SQLITE_OK;
-}
-
-// C++ wrapper class for the C wrapper API that wraps our C++ API, because why not
-class SQLiteDBWrapper {
-public:
-	SQLiteDBWrapper() : db(nullptr) {
-	}
-	~SQLiteDBWrapper() {
-		if (db) {
-			sqlite3_close(db);
-		}
-	}
-
-	sqlite3 *db;
-	vector<vector<string>> results;
-
-public:
-	int Open(string filename) {
-		return sqlite3_open(filename.c_str(), &db) == SQLITE_OK;
-	}
-
-	string GetErrorMessage() {
-		auto err = sqlite3_errmsg(db);
-		return err ? string(err) : string();
-	}
-
-	bool Execute(string query) {
-		results.clear();
-		char *errmsg = nullptr;
-		int rc = sqlite3_exec(db, query.c_str(), concatenate_results, &results, &errmsg);
-		if (errmsg) {
-			sqlite3_free(errmsg);
-		}
-		return rc == SQLITE_OK;
-	}
-
-	void PrintResult() {
-		for (size_t row_idx = 0; row_idx < results[0].size(); row_idx++) {
-			for (size_t col_idx = 0; col_idx < results.size(); col_idx++) {
-				printf("%s|", results[col_idx][row_idx].c_str());
-			}
-			printf("\n");
-		}
-	}
-
-	bool CheckColumn(size_t column, vector<string> expected_data) {
-		if (column >= results.size()) {
-			fprintf(stderr, "Column index is out of range!\n");
-			PrintResult();
-			return false;
-		}
-		if (results[column].size() != expected_data.size()) {
-			fprintf(stderr, "Row counts do not match!\n");
-			PrintResult();
-			return false;
-		}
-		for (size_t i = 0; i < expected_data.size(); i++) {
-			if (expected_data[i] != results[column][i]) {
-				fprintf(stderr, "Value does not match: expected \"%s\" but got \"%s\"\n", expected_data[i].c_str(),
-				        results[column][i].c_str());
-				return false;
-			}
-		}
-		return true;
-	}
-};
-
-class SQLiteStmtWrapper {
-public:
-	SQLiteStmtWrapper() : stmt(nullptr) {
-	}
-	~SQLiteStmtWrapper() {
-		Finalize();
-	}
-
-	sqlite3_stmt *stmt;
-	string error_message;
-
-	int Prepare(sqlite3 *db, const char *zSql, int nByte, const char **pzTail) {
-		Finalize();
-		return sqlite3_prepare_v2(db, zSql, nByte, &stmt, pzTail);
-	}
-
-	void Finalize() {
-		if (stmt) {
-			sqlite3_finalize(stmt);
-			stmt = nullptr;
-		}
-	}
-};
 
 TEST_CASE("Basic sqlite wrapper usage", "[sqlite3wrapper]") {
 	SQLiteDBWrapper db;
@@ -150,22 +53,22 @@ TEST_CASE("Basic prepared statement usage", "[sqlite3wrapper]") {
 
 	// open an in-memory db
 	REQUIRE(db.Open(":memory:"));
-	REQUIRE(db.Execute("CREATE TABLE test(i INTEGER, j BIGINT, k DATE, l VARCHAR)"));
+	REQUIRE(db.Execute("CREATE TABLE test(i INTEGER, j BIGINT, k DATE, l VARCHAR, b BLOB)"));
 #ifndef SQLITE_TEST
 	// sqlite3_prepare_v2 errors
 	// nullptr for db/stmt, note: normal sqlite segfaults here
-	REQUIRE(sqlite3_prepare_v2(nullptr, "INSERT INTO test VALUES ($1, $2, $3, $4)", -1, nullptr, nullptr) ==
+	REQUIRE(sqlite3_prepare_v2(nullptr, "INSERT INTO test VALUES ($1, $2, $3, $4, $5)", -1, nullptr, nullptr) ==
 	        SQLITE_MISUSE);
-	REQUIRE(sqlite3_prepare_v2(db.db, "INSERT INTO test VALUES ($1, $2, $3, $4)", -1, nullptr, nullptr) ==
+	REQUIRE(sqlite3_prepare_v2(db.db, "INSERT INTO test VALUES ($1, $2, $3, $4, $5)", -1, nullptr, nullptr) ==
 	        SQLITE_MISUSE);
 #endif
 	// prepared statement
-	REQUIRE(stmt.Prepare(db.db, "INSERT INTO test VALUES ($1, $2, $3, $4)", -1, nullptr) == SQLITE_OK);
+	REQUIRE(stmt.Prepare(db.db, "INSERT INTO test VALUES ($1, $2, $3, $4, $5)", -1, nullptr) == SQLITE_OK);
 
 	// test for parameter count, names and indexes
 	REQUIRE(sqlite3_bind_parameter_count(nullptr) == 0);
-	REQUIRE(sqlite3_bind_parameter_count(stmt.stmt) == 4);
-	for (int i = 1; i < 5; i++) {
+	REQUIRE(sqlite3_bind_parameter_count(stmt.stmt) == 5);
+	for (int i = 1; i < 6; i++) {
 		REQUIRE(sqlite3_bind_parameter_name(nullptr, i) == nullptr);
 		REQUIRE(sqlite3_bind_parameter_index(nullptr, nullptr) == 0);
 		REQUIRE(sqlite3_bind_parameter_index(stmt.stmt, nullptr) == 0);
@@ -174,7 +77,7 @@ TEST_CASE("Basic prepared statement usage", "[sqlite3wrapper]") {
 		REQUIRE(sqlite3_bind_parameter_index(stmt.stmt, sqlite3_bind_parameter_name(stmt.stmt, i)) == i);
 	}
 	REQUIRE(sqlite3_bind_parameter_name(stmt.stmt, 0) == nullptr);
-	REQUIRE(sqlite3_bind_parameter_name(stmt.stmt, 5) == nullptr);
+	REQUIRE(sqlite3_bind_parameter_name(stmt.stmt, 6) == nullptr);
 
 #ifndef SQLITE_TEST
 	// this segfaults in SQLITE
@@ -186,7 +89,7 @@ TEST_CASE("Basic prepared statement usage", "[sqlite3wrapper]") {
 	// incorrect bindings: nullptr as statement, wrong type and out of range binding
 	REQUIRE(sqlite3_bind_int(nullptr, 1, 1) == SQLITE_MISUSE);
 	REQUIRE(sqlite3_bind_int(stmt.stmt, 0, 1) == SQLITE_RANGE);
-	REQUIRE(sqlite3_bind_int(stmt.stmt, 5, 1) == SQLITE_RANGE);
+	REQUIRE(sqlite3_bind_int(stmt.stmt, 6, 1) == SQLITE_RANGE);
 
 	// we can bind the incorrect type just fine
 	// error will only be thrown on execution
@@ -196,7 +99,18 @@ TEST_CASE("Basic prepared statement usage", "[sqlite3wrapper]") {
 	REQUIRE(sqlite3_bind_int(stmt.stmt, 1, 2) == SQLITE_OK);
 	REQUIRE(sqlite3_bind_int64(stmt.stmt, 2, 1000) == SQLITE_OK);
 	REQUIRE(sqlite3_bind_text(stmt.stmt, 3, "1992-01-01", -1, nullptr) == SQLITE_OK);
+	REQUIRE(sqlite3_bind_text(stmt.stmt, 4, nullptr, -1, &free) == SQLITE_MISUSE);
+	char *buffer = (char *)malloc(12);
+	strcpy(buffer, "hello world");
+	REQUIRE(sqlite3_bind_text(stmt.stmt, 4, buffer, -1, &free) == SQLITE_OK);
 	REQUIRE(sqlite3_bind_text(stmt.stmt, 4, "hello world", -1, nullptr) == SQLITE_OK);
+	// test for bind blob
+	REQUIRE(sqlite3_bind_blob(stmt.stmt, 5, "hello world", -1, nullptr) == SQLITE_OK);
+	REQUIRE(sqlite3_bind_blob(stmt.stmt, 5, "hello world", 11, nullptr) == SQLITE_OK);
+	REQUIRE(sqlite3_bind_blob(stmt.stmt, 5, NULL, 10, &free) == SQLITE_MISUSE);
+	buffer = (char *)malloc(6);
+	strcpy(buffer, "hello");
+	REQUIRE(sqlite3_bind_blob(stmt.stmt, 5, buffer, 5, &free) == SQLITE_OK);
 
 	REQUIRE(sqlite3_step(nullptr) == SQLITE_MISUSE);
 	REQUIRE(sqlite3_step(stmt.stmt) == SQLITE_DONE);
@@ -211,6 +125,7 @@ TEST_CASE("Basic prepared statement usage", "[sqlite3wrapper]") {
 	REQUIRE(sqlite3_bind_null(stmt.stmt, 2) == SQLITE_OK);
 	REQUIRE(sqlite3_bind_null(stmt.stmt, 3) == SQLITE_OK);
 	REQUIRE(sqlite3_bind_null(stmt.stmt, 4) == SQLITE_OK);
+	REQUIRE(sqlite3_bind_null(stmt.stmt, 5) == SQLITE_OK);
 
 	// we can step multiple times
 	REQUIRE(sqlite3_step(stmt.stmt) == SQLITE_DONE);
@@ -223,10 +138,12 @@ TEST_CASE("Basic prepared statement usage", "[sqlite3wrapper]") {
 	REQUIRE(sqlite3_step(stmt.stmt) == SQLITE_DONE);
 
 	REQUIRE(db.Execute("SELECT * FROM test ORDER BY 1"));
-	REQUIRE(db.CheckColumn(0, {"", "", "", "", "2"}));
-	REQUIRE(db.CheckColumn(1, {"", "", "", "", "1000"}));
-	REQUIRE(db.CheckColumn(2, {"", "", "", "", "1992-01-01"}));
-	REQUIRE(db.CheckColumn(3, {"", "", "", "", "hello world"}));
+
+	REQUIRE(db.CheckColumn(0, {"NULL", "NULL", "NULL", "NULL", "2"}));
+	REQUIRE(db.CheckColumn(1, {"NULL", "NULL", "NULL", "NULL", "1000"}));
+	REQUIRE(db.CheckColumn(2, {"NULL", "NULL", "NULL", "NULL", "1992-01-01"}));
+	REQUIRE(db.CheckColumn(3, {"NULL", "NULL", "NULL", "NULL", "hello world"}));
+	REQUIRE(db.CheckColumn(4, {"NULL", "NULL", "NULL", "NULL", "hello"}));
 
 	REQUIRE(sqlite3_finalize(nullptr) == SQLITE_OK);
 
@@ -264,6 +181,7 @@ TEST_CASE("Basic prepared statement usage", "[sqlite3wrapper]") {
 	REQUIRE(string((char *)sqlite3_column_text(stmt.stmt, 1)) == string("1000"));
 	REQUIRE(string((char *)sqlite3_column_text(stmt.stmt, 2)) == string("1992-01-01"));
 	REQUIRE(string((char *)sqlite3_column_text(stmt.stmt, 3)) == string("hello world"));
+	REQUIRE(string((char *)sqlite3_column_blob(stmt.stmt, 4)) == string("hello"));
 	REQUIRE(sqlite3_column_int(stmt.stmt, 3) == 0);
 	REQUIRE(sqlite3_column_int64(stmt.stmt, 3) == 0);
 	REQUIRE(sqlite3_column_double(stmt.stmt, 3) == 0);
