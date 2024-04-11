@@ -1,4 +1,5 @@
-# name: test/sql/copy/csv/rejects/csv_rejects_auto.test
+# name: test/sql/copy/csv/rejects/csv_buffer_size_rejects.test
+# description: Force CSV Lines from errors to fall mid-buffers
 # group: [rejects]
 
 require skip_reload
@@ -6,14 +7,24 @@ require skip_reload
 # Test will fail on windows because byte_position is slightly different due to \r\n instead of \n
 require notwindows
 
+loop buffer_size 5 8
+
 # Ensure that we can get the schema if we reduce the sample size and ignore errors
 query IIIII
 SELECT typeof(first(column0)), typeof(first(column1)), COUNT(*), SUM(column0), MAX(len(column1)) FROM read_csv_auto(
     'test/sql/copy/csv/data/error/mismatch/big_bad*.csv',
     sample_size=1,
-    store_rejects=true);
+    buffer_size=${buffer_size},
+    store_rejects = true);
 ----
 BIGINT	VARCHAR	11044	11044	2
+
+query IIIIIIIIIII rowsort
+SELECT * EXCLUDE (scan_id, user_arguments) FROM reject_scans order by all;
+----
+0	test/sql/copy/csv/data/error/mismatch/big_bad.csv	,	\0	\0	\n	0	false	{'column0': 'BIGINT','column1': 'VARCHAR'}	NULL	NULL
+1	test/sql/copy/csv/data/error/mismatch/big_bad2.csv	,	\0	\0	\n	0	false	{'column0': 'BIGINT','column1': 'VARCHAR'}	NULL	NULL
+
 
 query IIIIIIIII rowsort
 SELECT * EXCLUDE (scan_id) FROM reject_errors order by all;
@@ -29,42 +40,4 @@ DROP TABLE reject_errors;
 statement ok
 DROP TABLE reject_scans;
 
-# Test with lots of errors 
-query I
-SELECT SUM(num) FROM read_csv_auto(
-	'test/sql/copy/csv/data/error/mismatch/half1.csv',
-	header=true,
-	sample_size=1,
-	store_rejects=true)
-----
-2464
-
-query I
-SELECT COUNT(*) FROM reject_errors;
-----
-1024
-
-statement ok
-DROP TABLE reject_errors;
-
-statement ok
-DROP TABLE reject_scans;
-
-# Test with more errors than STANDARD_VECTOR_SIZE
-query I
-SELECT SUM(num) FROM read_csv_auto(
-	'test/sql/copy/csv/data/error/mismatch/half2.csv',
-	header=true,
-	ignore_errors=true,
-	sample_size=1,
-	rejects_table='csv_rejects_table');
-----
-2542
-
-query I
-SELECT COUNT(*) FROM csv_rejects_table;
-----
-3072
-
-statement ok
-DROP TABLE csv_rejects_table;
+endloop
