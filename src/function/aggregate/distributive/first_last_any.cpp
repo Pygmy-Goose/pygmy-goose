@@ -1,7 +1,8 @@
 #include "duckdb/common/exception.hpp"
 #include "duckdb/common/vector_operations/vector_operations.hpp"
-#include "duckdb/function/create_sort_key.hpp"
 #include "duckdb/function/aggregate/distributive_functions.hpp"
+#include "duckdb/function/aggregate/distributive_function_utils.hpp"
+#include "duckdb/function/create_sort_key.hpp"
 #include "duckdb/planner/expression.hpp"
 
 namespace duckdb {
@@ -68,7 +69,7 @@ struct FirstFunction : public FirstFunctionBase {
 
 template <bool LAST, bool SKIP_NULLS>
 struct FirstFunctionStringBase : public FirstFunctionBase {
-	template <class STATE>
+	template <class STATE, bool COMBINE = false>
 	static void SetValue(STATE &state, AggregateInputData &input_data, string_t value, bool is_null) {
 		if (LAST && state.is_set) {
 			Destroy(state, input_data);
@@ -81,7 +82,9 @@ struct FirstFunctionStringBase : public FirstFunctionBase {
 		} else {
 			state.is_set = true;
 			state.is_null = false;
-			if (value.IsInlined()) {
+			if ((COMBINE && !LAST) || value.IsInlined()) {
+				// We use the aggregate allocator for 'first', so the allocation is already done when combining
+				// Of course, if the value is inlined, we also don't need to allocate
 				state.value = value;
 			} else {
 				// non-inlined string, need to allocate space for it
@@ -97,7 +100,7 @@ struct FirstFunctionStringBase : public FirstFunctionBase {
 	template <class STATE, class OP>
 	static void Combine(const STATE &source, STATE &target, AggregateInputData &input_data) {
 		if (source.is_set && (LAST || !target.is_set)) {
-			SetValue(target, input_data, source.value, source.is_null);
+			SetValue<STATE, true>(target, input_data, source.value, source.is_null);
 		}
 	}
 
@@ -291,7 +294,7 @@ static AggregateFunction GetFirstFunction(const LogicalType &type) {
 	}
 }
 
-AggregateFunction FirstFun::GetFunction(const LogicalType &type) {
+AggregateFunction FirstFunctionGetter::GetFunction(const LogicalType &type) {
 	auto fun = GetFirstFunction<false, false>(type);
 	fun.name = "first";
 	return fun;
@@ -338,22 +341,22 @@ static void AddFirstOperator(AggregateFunctionSet &set) {
 	                                  nullptr, BindFirst<LAST, SKIP_NULLS>));
 }
 
-void FirstFun::RegisterFunction(BuiltinFunctions &set) {
+AggregateFunctionSet FirstFun::GetFunctions() {
 	AggregateFunctionSet first("first");
-	AggregateFunctionSet last("last");
-	AggregateFunctionSet any_value("any_value");
-
 	AddFirstOperator<false, false>(first);
+	return first;
+}
+
+AggregateFunctionSet LastFun::GetFunctions() {
+	AggregateFunctionSet last("last");
 	AddFirstOperator<true, false>(last);
+	return last;
+}
+
+AggregateFunctionSet AnyValueFun::GetFunctions() {
+	AggregateFunctionSet any_value("any_value");
 	AddFirstOperator<false, true>(any_value);
-
-	set.AddFunction(first);
-	first.name = "arbitrary";
-	set.AddFunction(first);
-
-	set.AddFunction(last);
-
-	set.AddFunction(any_value);
+	return any_value;
 }
 
 } // namespace duckdb
