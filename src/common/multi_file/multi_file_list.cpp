@@ -1,4 +1,4 @@
-#include "duckdb/common/multi_file_reader.hpp"
+#include "duckdb/common/multi_file/multi_file_reader.hpp"
 
 #include "duckdb/common/exception.hpp"
 #include "duckdb/common/hive_partitioning.hpp"
@@ -27,7 +27,7 @@ MultiFilePushdownInfo::MultiFilePushdownInfo(idx_t table_index, const vector<str
 }
 
 // Helper method to do Filter Pushdown into a MultiFileList
-bool PushdownInternal(ClientContext &context, const MultiFileReaderOptions &options, MultiFilePushdownInfo &info,
+bool PushdownInternal(ClientContext &context, const MultiFileOptions &options, MultiFilePushdownInfo &info,
                       vector<unique_ptr<Expression>> &filters, vector<string> &expanded_files) {
 	HivePartitioningFilterInfo filter_info;
 	for (idx_t i = 0; i < info.column_ids.size(); i++) {
@@ -49,7 +49,7 @@ bool PushdownInternal(ClientContext &context, const MultiFileReaderOptions &opti
 	return false;
 }
 
-bool PushdownInternal(ClientContext &context, const MultiFileReaderOptions &options, const vector<string> &names,
+bool PushdownInternal(ClientContext &context, const MultiFileOptions &options, const vector<string> &names,
                       const vector<LogicalType> &types, const vector<column_t> &column_ids,
                       const TableFilterSet &filters, vector<string> &expanded_files) {
 	idx_t table_index = 0;
@@ -61,7 +61,8 @@ bool PushdownInternal(ClientContext &context, const MultiFileReaderOptions &opti
 	// construct the set of expressions from the table filters
 	vector<unique_ptr<Expression>> filter_expressions;
 	for (auto &entry : filters.filters) {
-		auto column_idx = column_ids[entry.first];
+		idx_t local_index = entry.first;
+		idx_t column_idx = column_ids[local_index];
 		if (IsVirtualColumn(column_idx)) {
 			continue;
 		}
@@ -164,18 +165,18 @@ bool MultiFileList::Scan(MultiFileListScanData &iterator, string &result_file) {
 	return true;
 }
 
-unique_ptr<MultiFileList> MultiFileList::ComplexFilterPushdown(ClientContext &context,
-                                                               const MultiFileReaderOptions &options,
+unique_ptr<MultiFileList> MultiFileList::ComplexFilterPushdown(ClientContext &context, const MultiFileOptions &options,
                                                                MultiFilePushdownInfo &info,
                                                                vector<unique_ptr<Expression>> &filters) {
 	// By default the filter pushdown into a multifilelist does nothing
 	return nullptr;
 }
 
-unique_ptr<MultiFileList>
-MultiFileList::DynamicFilterPushdown(ClientContext &context, const MultiFileReaderOptions &options,
-                                     const vector<string> &names, const vector<LogicalType> &types,
-                                     const vector<column_t> &column_ids, TableFilterSet &filters) const {
+unique_ptr<MultiFileList> MultiFileList::DynamicFilterPushdown(ClientContext &context, const MultiFileOptions &options,
+                                                               const vector<string> &names,
+                                                               const vector<LogicalType> &types,
+                                                               const vector<column_t> &column_ids,
+                                                               TableFilterSet &filters) const {
 	// By default the filter pushdown into a multifilelist does nothing
 	return nullptr;
 }
@@ -200,7 +201,7 @@ SimpleMultiFileList::SimpleMultiFileList(vector<string> paths_p)
 }
 
 unique_ptr<MultiFileList> SimpleMultiFileList::ComplexFilterPushdown(ClientContext &context_p,
-                                                                     const MultiFileReaderOptions &options,
+                                                                     const MultiFileOptions &options,
                                                                      MultiFilePushdownInfo &info,
                                                                      vector<unique_ptr<Expression>> &filters) {
 	if (!options.hive_partitioning && !options.filename) {
@@ -219,7 +220,7 @@ unique_ptr<MultiFileList> SimpleMultiFileList::ComplexFilterPushdown(ClientConte
 }
 
 unique_ptr<MultiFileList>
-SimpleMultiFileList::DynamicFilterPushdown(ClientContext &context, const MultiFileReaderOptions &options,
+SimpleMultiFileList::DynamicFilterPushdown(ClientContext &context, const MultiFileOptions &options,
                                            const vector<string> &names, const vector<LogicalType> &types,
                                            const vector<column_t> &column_ids, TableFilterSet &filters) const {
 	if (!options.hive_partitioning && !options.filename) {
@@ -270,7 +271,7 @@ GlobMultiFileList::GlobMultiFileList(ClientContext &context_p, vector<string> pa
 }
 
 unique_ptr<MultiFileList> GlobMultiFileList::ComplexFilterPushdown(ClientContext &context_p,
-                                                                   const MultiFileReaderOptions &options,
+                                                                   const MultiFileOptions &options,
                                                                    MultiFilePushdownInfo &info,
                                                                    vector<unique_ptr<Expression>> &filters) {
 	lock_guard<mutex> lck(lock);
@@ -293,7 +294,7 @@ unique_ptr<MultiFileList> GlobMultiFileList::ComplexFilterPushdown(ClientContext
 }
 
 unique_ptr<MultiFileList>
-GlobMultiFileList::DynamicFilterPushdown(ClientContext &context, const MultiFileReaderOptions &options,
+GlobMultiFileList::DynamicFilterPushdown(ClientContext &context, const MultiFileOptions &options,
                                          const vector<string> &names, const vector<LogicalType> &types,
                                          const vector<column_t> &column_ids, TableFilterSet &filters) const {
 	if (!options.hive_partitioning && !options.filename) {
