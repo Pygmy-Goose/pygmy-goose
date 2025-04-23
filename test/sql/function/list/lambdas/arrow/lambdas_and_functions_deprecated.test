@@ -1,12 +1,15 @@
-# name: test/sql/function/list/lambdas/lambdas_and_functions.test
+# name: test/sql/function/list/lambdas/arrow/lambdas_and_functions_deprecated.test
 # description: Test mixing lambdas and functions
-# group: [lambdas]
+# group: [arrow]
 
 require json
 
 statement ok
+SET enable_single_arrow_for_lambda=true
+
+statement ok
 CREATE OR REPLACE function demo(n, z) AS TABLE (
-  SELECT list_transform(range(0, n), LAMBDA x : z) AS row
+  SELECT list_transform(range(0, n), x -> z) AS row
 );
 
 query I
@@ -16,7 +19,7 @@ FROM demo(3, 0);
 
 statement ok
 CREATE OR REPLACE function demo(n, z) AS TABLE (
-  SELECT list_transform(range(0, n), LAMBDA x : 0 + z) AS row
+  SELECT list_transform(range(0, n), x -> 0 + z) AS row
 );
 
 query I
@@ -26,7 +29,7 @@ FROM demo(3, 0);
 
 statement ok
 CREATE OR REPLACE function demo(n, z) AS TABLE (
-  SELECT list_transform(range(0, n), LAMBDA x : (z -> 'a')) AS row
+  SELECT list_transform(range(0, n), x -> (z -> 'a')) AS row
 );
 
 query I
