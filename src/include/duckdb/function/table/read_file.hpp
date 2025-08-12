@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/execution/operator/csv_scanner/csv_multi_file_info.hpp
+// duckdb/function/table/read_file.hpp
 //
 //
 //===----------------------------------------------------------------------===//
@@ -9,33 +9,63 @@
 #pragma once
 
 #include "duckdb/common/multi_file/multi_file_function.hpp"
-#include "duckdb/execution/operator/csv_scanner/csv_reader_options.hpp"
-#include "duckdb/execution/operator/csv_scanner/csv_buffer_manager.hpp"
-#include "duckdb/execution/operator/csv_scanner/csv_schema.hpp"
+#include "utf8proc_wrapper.hpp"
 
 namespace duckdb {
 
-class CSVFileReaderOptions : public BaseFileReaderOptions {
-public:
-	CSVFileReaderOptions() = default;
-	explicit CSVFileReaderOptions(CSVReaderOptions options_p) : options(std::move(options_p)) {
+struct ReadFileBindData : public TableFunctionData {
+	unique_ptr<BaseFileReaderOptions> options;
+
+	static constexpr const idx_t FILE_NAME_COLUMN = 0;
+	static constexpr const idx_t FILE_CONTENT_COLUMN = 1;
+	static constexpr const idx_t FILE_SIZE_COLUMN = 2;
+	static constexpr const idx_t FILE_LAST_MODIFIED_COLUMN = 3;
+};
+
+struct ReadFileGlobalState : public GlobalTableFunctionState {
+	ReadFileGlobalState() {
 	}
 
-	CSVReaderOptions options;
+	shared_ptr<MultiFileList> file_list;
+	vector<idx_t> column_ids;
+	bool requires_file_open = false;
 };
 
-struct CSVSchemaDiscovery {
-	static CSVSchema SchemaDiscovery(ClientContext &context, shared_ptr<CSVBufferManager> &buffer_manager,
-	                                 CSVReaderOptions &options, const MultiFileOptions &file_options,
-	                                 vector<LogicalType> &return_types, vector<string> &names,
-	                                 MultiFileList &multi_file_list);
+struct ReadBlobOperation {
+	static constexpr const char *NAME = "read_blob";
+	static constexpr const char *FILE_TYPE = "blob";
+
+	static inline LogicalType TYPE() {
+		return LogicalType::BLOB;
+	}
+
+	static inline void VERIFY(const string &, const string_t &) {
+	}
 };
 
-struct CSVMultiFileInfo : public MultiFileReaderInterface {
+struct ReadTextOperation {
+	static constexpr const char *NAME = "read_text";
+	static constexpr const char *FILE_TYPE = "text";
+
+	static inline LogicalType TYPE() {
+		return LogicalType::VARCHAR;
+	}
+
+	static inline void VERIFY(const string &filename, const string_t &content) {
+		if (Utf8Proc::Analyze(content.GetData(), content.GetSize()) == UnicodeType::INVALID) {
+			throw InvalidInputException(
+			    "read_text: could not read content of file '%s' as valid UTF-8 encoded text. You "
+			    "may want to use read_blob instead.",
+			    filename);
+		}
+	}
+};
+
+template <class OP>
+struct DirectMultiFileInfo : MultiFileReaderInterface {
 	static FileGlobOptions InitializeFileGlobOptions(ClientContext &context);
 	static unique_ptr<MultiFileReaderInterface> InitializeInterface(ClientContext &context, MultiFileReader &reader,
 	                                                                MultiFileList &file_list);
-
 	unique_ptr<BaseFileReaderOptions> InitializeOptions(ClientContext &context,
 	                                                    optional_ptr<TableFunctionInfo> info) override;
 	bool ParseCopyOption(ClientContext &context, const string &key, const vector<Value> &values,
@@ -43,13 +73,10 @@ struct CSVMultiFileInfo : public MultiFileReaderInterface {
 	                     vector<LogicalType> &expected_types) override;
 	bool ParseOption(ClientContext &context, const string &key, const Value &val, MultiFileOptions &file_options,
 	                 BaseFileReaderOptions &options) override;
-	void FinalizeCopyBind(ClientContext &context, BaseFileReaderOptions &options, const vector<string> &expected_names,
-	                      const vector<LogicalType> &expected_types) override;
 	unique_ptr<TableFunctionData> InitializeBindData(MultiFileBindData &multi_file_data,
 	                                                 unique_ptr<BaseFileReaderOptions> options) override;
 	void BindReader(ClientContext &context, vector<LogicalType> &return_types, vector<string> &names,
 	                MultiFileBindData &bind_data) override;
-	void FinalizeBindData(MultiFileBindData &multi_file_data) override;
 	optional_idx MaxThreads(const MultiFileBindData &bind_data_p, const MultiFileGlobalState &global_state,
 	                        FileExpandResult expand_result) override;
 	unique_ptr<GlobalTableFunctionState> InitializeGlobalState(ClientContext &context, MultiFileBindData &bind_data,
@@ -63,8 +90,6 @@ struct CSVMultiFileInfo : public MultiFileReaderInterface {
 	shared_ptr<BaseFileReader> CreateReader(ClientContext &context, const OpenFileInfo &file,
 	                                        BaseFileReaderOptions &options,
 	                                        const MultiFileOptions &file_options) override;
-	void FinishReading(ClientContext &context, GlobalTableFunctionState &global_state,
-	                   LocalTableFunctionState &local_state) override;
 	unique_ptr<NodeStatistics> GetCardinality(const MultiFileBindData &bind_data, idx_t file_count) override;
 };
 
