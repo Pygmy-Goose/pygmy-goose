@@ -104,7 +104,6 @@
     {
       "reason": "Unclassified failures",
       "paths": [
-        "test/sql/copy/csv/glob/copy_csv_glob.test",
         "test/sql/alter/alter_table_set_table_options.test",
         "test/sql/storage/wal/wal_replay_consistency_add_column_current_timestamp.test",
         "test/sql/storage/wal/wal_replay_consistency_add_column_random.test",
