@@ -17,7 +17,8 @@
         "test/sql/types/nested/array/array_invalid.test",
         "test/sql/types/nested/struct/struct_dict.test",
         "test/sql/types/map/map_empty.test",
-        "test/sql/binder/column_ref_as_alias.test"
+        "test/sql/binder/column_ref_as_alias.test",
+        "test/sql/error/lineitem_errors.test"
       ]
     },
     {
@@ -103,9 +104,6 @@
     {
       "reason": "Unclassified failures",
       "paths": [
-        "test/sql/error/lineitem_errors.test",
-        "test/sql/create/create_as_partition_sorted_options.test",
-        "test/sql/select/test_select_locking.test",
         "test/sql/copy/csv/glob/copy_csv_glob.test",
         "test/sql/alter/alter_table_set_table_options.test",
         "test/sql/storage/wal/wal_replay_consistency_add_column_current_timestamp.test",
@@ -124,8 +122,11 @@
       ]
     },
     {
-      "reason": "New CREATE TABLE option syntax",
-      "paths": ["test/sql/create/create_table_extra_options.test"]
+      "reason": "New syntax",
+      "paths": [
+        "test/sql/create/create_table_extra_options.test",
+        "test/sql/create/create_as_partition_sorted_options.test"
+      ]
     },
     {
       "reason": "DESCRIBE with CTE not supported",
