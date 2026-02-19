@@ -102,12 +102,6 @@
       ]
     },
     {
-      "reason": "Unclassified failures",
-      "paths": [
-        "test/optimizer/joins/lateral_cross_join.test"
-      ]
-    },
-    {
       "reason": "Expression depth",
       "paths": [
         "test/sql/overflow/expression_tree_depth.test"
