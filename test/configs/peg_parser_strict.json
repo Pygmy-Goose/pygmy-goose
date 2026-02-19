@@ -104,7 +104,6 @@
     {
       "reason": "Unclassified failures",
       "paths": [
-        "test/sql/binder/test_string_alias.test",
         "test/optimizer/joins/lateral_cross_join.test"
       ]
     },
