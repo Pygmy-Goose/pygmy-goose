@@ -104,9 +104,6 @@
     {
       "reason": "Unclassified failures",
       "paths": [
-        "test/sql/function/string/test_string_slice.test",
-        "test/sql/function/string/test_subscript.test",
-        "test/sql/catalog/table/create_table_parameters.test",
         "test/sql/binder/test_string_alias.test",
         "test/optimizer/joins/lateral_cross_join.test"
       ]
@@ -115,6 +112,13 @@
       "reason": "Expression depth",
       "paths": [
         "test/sql/overflow/expression_tree_depth.test"
+      ]
+    },
+    {
+      "reason": "Different behaviour compared to PostgreSQL parser",
+      "paths": [
+        "test/sql/function/string/test_string_slice.test",
+        "test/sql/function/string/test_subscript.test"
       ]
     },
     {
