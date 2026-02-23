@@ -3,6 +3,8 @@
 #include "duckdb/planner/operator/logical_comparison_join.hpp"
 #include "duckdb/planner/expression/bound_columnref_expression.hpp"
 #include "duckdb/planner/expression_iterator.hpp"
+#include "duckdb/optimizer/optimizer.hpp"
+#include "duckdb/planner/binder.hpp"
 
 namespace duckdb {
 
@@ -19,15 +21,14 @@ void ProjectionPullup::PopParents(const LogicalOperator &op) {
 
 void ProjectionPullup::Optimize(unique_ptr<LogicalOperator> &op) {
 	switch (op->type) {
-		case LogicalOperatorType::LOGICAL_INTERSECT:
-		case LogicalOperatorType::LOGICAL_EXCEPT:
-		case LogicalOperatorType::LOGICAL_UNION: {
+	case LogicalOperatorType::LOGICAL_INTERSECT:
+	case LogicalOperatorType::LOGICAL_EXCEPT:
+	case LogicalOperatorType::LOGICAL_UNION: {
 		parents.push_back(*op);
 		for (auto &child : op->children) {
 			if (child->type == LogicalOperatorType::LOGICAL_PROJECTION) {
 				Optimize(child->children[0]);
-			}
-			else {
+			} else {
 				child->ResolveOperatorTypes();
 				auto proj_index = optimizer.binder.GenerateTableIndex();
 				auto child_bindings = child->GetColumnBindings();
@@ -38,7 +39,7 @@ void ProjectionPullup::Optimize(unique_ptr<LogicalOperator> &op) {
 				expressions.reserve(child_bindings.size());
 
 				for (idx_t i = 0; i < child_bindings.size(); i++) {
-					expressions.push_back(make_uniq<BoundColumnRefExpression>(child_types[i],child_bindings[i]));
+					expressions.push_back(make_uniq<BoundColumnRefExpression>(child_types[i], child_bindings[i]));
 				}
 
 				auto new_projection = make_uniq<LogicalProjection>(proj_index, std::move(expressions));
@@ -49,7 +50,6 @@ void ProjectionPullup::Optimize(unique_ptr<LogicalOperator> &op) {
 				new_projection->children.emplace_back(std::move(child));
 				child = std::move(new_projection);
 				Optimize(child->children[0]);
-
 			}
 		}
 
@@ -62,17 +62,12 @@ void ProjectionPullup::Optimize(unique_ptr<LogicalOperator> &op) {
 	case LogicalOperatorType::LOGICAL_MATERIALIZED_CTE:
 	case LogicalOperatorType::LOGICAL_CTE_REF:
 	case LogicalOperatorType::LOGICAL_COPY_TO_FILE:
-	case LogicalOperatorType::LOGICAL_PIVOT:
-	// case LogicalOperatorType::LOGICAL_UNION:
-	// case LogicalOperatorType::LOGICAL_EXCEPT:
-	// case LogicalOperatorType::LOGICAL_INTERSECT:
-	{
+	case LogicalOperatorType::LOGICAL_PIVOT: {
 		parents.push_back(*op);
 		for (auto &child : op->children) {
 			if (child->type == LogicalOperatorType::LOGICAL_PROJECTION) {
 				Optimize(child->children[0]);
-			}
-			else {
+			} else {
 				child->ResolveOperatorTypes();
 				auto proj_index = optimizer.binder.GenerateTableIndex();
 				auto child_bindings = child->GetColumnBindings();
@@ -80,20 +75,18 @@ void ProjectionPullup::Optimize(unique_ptr<LogicalOperator> &op) {
 				const auto child_types = child->types;
 				const auto column_count = child_bindings.size();
 
-				// Printer::PrintF("Type is %s, number of bindings = %d, types size = %d, bindings size = %d, op types size = %d",op->GetName(), child_bindings.size(), child_types.size(), child_bindings.size(), op->types.size());
-
 				vector<unique_ptr<Expression>> expressions;
 				expressions.reserve(child_bindings.size());
 
 				for (idx_t i = 0; i < child_bindings.size(); i++) {
-					expressions.push_back(make_uniq<BoundColumnRefExpression>(child_types[i],child_bindings[i]));
+					expressions.push_back(make_uniq<BoundColumnRefExpression>(child_types[i], child_bindings[i]));
 				}
 
 				ColumnBindingReplacer replacer;
 				for (idx_t col_idx = 0; col_idx < column_count; col_idx++) {
 					const auto &old_binding = child_bindings[col_idx];
-					replacer.replacement_bindings.emplace_back(old_binding, ColumnBinding(proj_index, old_binding.column_index));
-					// Printer::PrintF("Replacing [%d,%d] with [%d,%d]",old_binding.table_index, old_binding.column_index, proj_index, old_binding.column_index);
+					ColumnBinding new_binding = ColumnBinding(proj_index, col_idx);
+					replacer.replacement_bindings.emplace_back(old_binding, new_binding);
 				}
 
 				auto new_projection = make_uniq<LogicalProjection>(proj_index, std::move(expressions));
@@ -104,11 +97,10 @@ void ProjectionPullup::Optimize(unique_ptr<LogicalOperator> &op) {
 				new_projection->children.emplace_back(std::move(child));
 				child = std::move(new_projection);
 
-				replacer.stop_operator = child.get();
+				replacer.stop_operator = child;
 				replacer.VisitOperator(root);
 
 				Optimize(child->children[0]);
-
 			}
 		}
 
