@@ -164,48 +164,20 @@ void GroupedAggregateHashTable::Destroy() {
 		return;
 	}
 
-	// Ensure any rows still buffered in append states become visible to the iterators below.
-	if (unpartitioned_data) {
-		unpartitioned_data->FlushAppendState(state.unpartitioned_append_state);
-	}
-	if (partitioned_data) {
-		partitioned_data->FlushAppendState(state.partitioned_append_state);
-	}
-
-	const bool has_partitioned_data = partitioned_data && partitioned_data->Count() > 0;
-	const bool has_unpartitioned_data = unpartitioned_data && unpartitioned_data->Count() > 0;
-	if (!has_partitioned_data && !has_unpartitioned_data) {
-		return;
-	}
-
 	// There are aggregates with destructors: Call the destructor for each of the aggregates
 	// Currently does not happen because aggregate destructors are called while scanning in RadixPartitionedHashTable
 	// LCOV_EXCL_START
-	if (has_partitioned_data) {
-		for (auto &data_collection : partitioned_data->GetPartitions()) {
-			if (data_collection->Count() == 0) {
-				continue;
-			}
-			TupleDataChunkIterator iterator(*data_collection, TupleDataPinProperties::DESTROY_AFTER_DONE, false);
-			auto &row_locations = iterator.GetChunkState().row_locations;
-			do {
-				RowOperations::DestroyStates(state.row_state, *layout_ptr, row_locations, iterator.GetCurrentChunkCount());
-			} while (iterator.Next());
-			data_collection->Reset();
+	auto acquired_data = AcquirePartitionedData();
+	for (auto &data_collection : acquired_data->GetPartitions()) {
+		if (data_collection->Count() == 0) {
+			continue;
 		}
-	}
-	if (has_unpartitioned_data) {
-		for (auto &data_collection : unpartitioned_data->GetPartitions()) {
-			if (data_collection->Count() == 0) {
-				continue;
-			}
-			TupleDataChunkIterator iterator(*data_collection, TupleDataPinProperties::DESTROY_AFTER_DONE, false);
-			auto &row_locations = iterator.GetChunkState().row_locations;
-			do {
-				RowOperations::DestroyStates(state.row_state, *layout_ptr, row_locations, iterator.GetCurrentChunkCount());
-			} while (iterator.Next());
-			data_collection->Reset();
-		}
+		TupleDataChunkIterator iterator(*data_collection, TupleDataPinProperties::DESTROY_AFTER_DONE, false);
+		auto &row_locations = iterator.GetChunkState().row_locations;
+		do {
+			RowOperations::DestroyStates(state.row_state, *layout_ptr, row_locations, iterator.GetCurrentChunkCount());
+		} while (iterator.Next());
+		data_collection->Reset();
 	}
 	// LCOV_EXCL_STOP
 }
