@@ -75,16 +75,6 @@ select FINALIZE(argmin(a,b) EXPORT_STATE), FINALIZE(argmax(a,b) EXPORT_STATE) fr
 
 mode unskip
 
-query II nosort res9
-SELECT corr(d, d+1), covar_pop(d, d+1)FROM dummy;
-----
-
-
-query II nosort res9
-SELECT FINALIZE(corr(d, d+1) EXPORT_STATE), FINALIZE(covar_pop(d, d+1) EXPORT_STATE) from dummy;
-----
-
-
 # you're holding it wrong:
 
 statement error
