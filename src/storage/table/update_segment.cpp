@@ -418,6 +418,9 @@ static void FetchRowValidity(transaction_t start_time, transaction_t transaction
 	UpdateInfo::UpdatesForTransaction(info, start_time, transaction_id, [&](UpdateInfo &current) {
 		auto info_data = current.GetData<bool>();
 		auto tuples = current.GetTuples();
+		if (current.N == 0) {
+			return;
+		}
 		idx_t left = 0;
 		idx_t right = current.N - 1;
 		while (left <= right) {
