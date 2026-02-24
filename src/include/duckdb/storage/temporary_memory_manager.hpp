@@ -109,8 +109,7 @@ private:
 	//! Update the TemporaryMemoryState to the new remaining size, and updates the reservation (must hold the lock)
 	void UpdateState(ClientContext &context, TemporaryMemoryState &temporary_memory_state) DUCKDB_REQUIRES(lock);
 	//! Set the remaining size of a TemporaryMemoryState (must hold the lock)
-	void SetRemainingSize(TemporaryMemoryState &temporary_memory_state, idx_t new_remaining_size)
-	    DUCKDB_REQUIRES(lock);
+	void SetRemainingSize(TemporaryMemoryState &temporary_memory_state, idx_t new_remaining_size) DUCKDB_REQUIRES(lock);
 	//! Set the reservation of a TemporaryMemoryState (must hold the lock)
 	void SetReservation(TemporaryMemoryState &temporary_memory_state, idx_t new_reservation) DUCKDB_REQUIRES(lock);
 	//! Computes optimal reservation of a TemporaryMemoryState based on a cost function
