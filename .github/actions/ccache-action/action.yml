@@ -3,6 +3,7 @@ runs:
   using: "composite"
   steps:
      - name: Setup Ccache
+       if: ${{ github.workflow != 'NightlyTests' }}
        uses: hendrikmuhs/ccache-action@main
        with:
          key: ${{ github.job }}
