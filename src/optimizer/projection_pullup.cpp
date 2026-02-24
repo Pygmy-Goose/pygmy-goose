@@ -19,92 +19,66 @@ void ProjectionPullup::PopParents(const LogicalOperator &op) {
 	}
 }
 
+void ProjectionPullup::InsertProjectionBelowOp(unique_ptr<LogicalOperator> &op, bool stop_at_op) {
+	parents.push_back(*op);
+	for (auto &child : op->children) {
+		if (child->type == LogicalOperatorType::LOGICAL_PROJECTION) {
+			Optimize(child->children[0]);
+		} else {
+			child->ResolveOperatorTypes();
+			auto proj_index = optimizer.binder.GenerateTableIndex();
+			auto child_bindings = child->GetColumnBindings();
+			const auto child_types = child->types;
+			const auto column_count = child_bindings.size();
+
+			vector<unique_ptr<Expression>> expressions;
+			expressions.reserve(column_count);
+			for (idx_t i = 0; i < column_count; i++) {
+				expressions.push_back(make_uniq<BoundColumnRefExpression>(child_types[i], child_bindings[i]));
+			}
+
+			ColumnBindingReplacer replacer;
+			for (idx_t col_idx = 0; col_idx < column_count; col_idx++) {
+				const auto &old_binding = child_bindings[col_idx];
+				replacer.replacement_bindings.emplace_back(old_binding, ColumnBinding(proj_index, col_idx));
+			}
+
+			auto new_projection = make_uniq<LogicalProjection>(proj_index, std::move(expressions));
+			if (child->has_estimated_cardinality) {
+				new_projection->SetEstimatedCardinality(child->estimated_cardinality);
+			}
+
+			new_projection->children.emplace_back(std::move(child));
+			child = std::move(new_projection);
+
+			if (stop_at_op) {
+				replacer.stop_operator = op.get();
+			} else {
+				replacer.stop_operator = child.get();
+			}
+			replacer.VisitOperator(root);
+
+			Optimize(child->children[0]);
+		}
+	}
+	PopParents(*op);
+}
+
 void ProjectionPullup::Optimize(unique_ptr<LogicalOperator> &op) {
 	switch (op->type) {
 	case LogicalOperatorType::LOGICAL_INTERSECT:
 	case LogicalOperatorType::LOGICAL_EXCEPT:
 	case LogicalOperatorType::LOGICAL_UNION: {
-		parents.push_back(*op);
-		for (auto &child : op->children) {
-			if (child->type == LogicalOperatorType::LOGICAL_PROJECTION) {
-				Optimize(child->children[0]);
-			} else {
-				child->ResolveOperatorTypes();
-				auto proj_index = optimizer.binder.GenerateTableIndex();
-				auto child_bindings = child->GetColumnBindings();
-				auto op_bindings = op->GetColumnBindings();
-				const auto child_types = child->types;
-
-				vector<unique_ptr<Expression>> expressions;
-				expressions.reserve(child_bindings.size());
-
-				for (idx_t i = 0; i < child_bindings.size(); i++) {
-					expressions.push_back(make_uniq<BoundColumnRefExpression>(child_types[i], child_bindings[i]));
-				}
-
-				auto new_projection = make_uniq<LogicalProjection>(proj_index, std::move(expressions));
-				if (child->has_estimated_cardinality) {
-					new_projection->SetEstimatedCardinality(child->estimated_cardinality);
-				}
-
-				new_projection->children.emplace_back(std::move(child));
-				child = std::move(new_projection);
-				Optimize(child->children[0]);
-			}
-		}
-
-		PopParents(*op);
+		InsertProjectionBelowOp(op, true);
 		return;
 	}
-	// These operators depend on column order, so we can't remove projections below them
 	case LogicalOperatorType::LOGICAL_DISTINCT:
 	case LogicalOperatorType::LOGICAL_RECURSIVE_CTE:
 	case LogicalOperatorType::LOGICAL_MATERIALIZED_CTE:
 	case LogicalOperatorType::LOGICAL_CTE_REF:
 	case LogicalOperatorType::LOGICAL_COPY_TO_FILE:
 	case LogicalOperatorType::LOGICAL_PIVOT: {
-		parents.push_back(*op);
-		for (auto &child : op->children) {
-			if (child->type == LogicalOperatorType::LOGICAL_PROJECTION) {
-				Optimize(child->children[0]);
-			} else {
-				child->ResolveOperatorTypes();
-				auto proj_index = optimizer.binder.GenerateTableIndex();
-				auto child_bindings = child->GetColumnBindings();
-				auto op_bindings = op->GetColumnBindings();
-				const auto child_types = child->types;
-				const auto column_count = child_bindings.size();
-
-				vector<unique_ptr<Expression>> expressions;
-				expressions.reserve(child_bindings.size());
-
-				for (idx_t i = 0; i < child_bindings.size(); i++) {
-					expressions.push_back(make_uniq<BoundColumnRefExpression>(child_types[i], child_bindings[i]));
-				}
-
-				ColumnBindingReplacer replacer;
-				for (idx_t col_idx = 0; col_idx < column_count; col_idx++) {
-					const auto &old_binding = child_bindings[col_idx];
-					ColumnBinding new_binding = ColumnBinding(proj_index, col_idx);
-					replacer.replacement_bindings.emplace_back(old_binding, new_binding);
-				}
-
-				auto new_projection = make_uniq<LogicalProjection>(proj_index, std::move(expressions));
-				if (child->has_estimated_cardinality) {
-					new_projection->SetEstimatedCardinality(child->estimated_cardinality);
-				}
-
-				new_projection->children.emplace_back(std::move(child));
-				child = std::move(new_projection);
-
-				replacer.stop_operator = child;
-				replacer.VisitOperator(root);
-
-				Optimize(child->children[0]);
-			}
-		}
-
-		PopParents(*op);
+		InsertProjectionBelowOp(op, false);
 		return;
 	}
 	case LogicalOperatorType::LOGICAL_ANY_JOIN:
