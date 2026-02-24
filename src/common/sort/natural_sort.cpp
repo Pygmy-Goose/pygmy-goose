@@ -35,7 +35,7 @@ public:
 	const NaturalSort &natural_sort;
 
 	//! Combined rows
-	mutable mutex lock;
+	mutable annotated_mutex lock;
 	HashGroupPtr hash_group;
 
 	// Threading

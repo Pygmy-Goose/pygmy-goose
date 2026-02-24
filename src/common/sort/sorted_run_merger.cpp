@@ -573,8 +573,8 @@ void SortedRunMergerLocalState::AcquirePartitionBoundaries(SortedRunMergerGlobal
 	auto &current_partition = *gstate.partitions[partition_idx.GetIndex()];
 	if (current_partition.GetBeginComputed()) {
 		// Begin has been computed, boundaries are ready to use. Copy to local
-		auto guard = current_partition.Lock();
-		run_boundaries = current_partition.GetRunBoundaries(guard);
+		annotated_lock_guard<annotated_mutex> guard(current_partition.lock);
+		run_boundaries = current_partition.GetRunBoundaries();
 		return;
 	}
 
