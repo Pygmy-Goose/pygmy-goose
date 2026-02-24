@@ -20,7 +20,6 @@ void ProjectionPullup::PopParents(const LogicalOperator &op) {
 }
 
 void ProjectionPullup::InsertProjectionBelowOp(unique_ptr<LogicalOperator> &op, bool stop_at_op) {
-	parents.push_back(*op);
 	for (auto &child : op->children) {
 		if (child->type == LogicalOperatorType::LOGICAL_PROJECTION) {
 			Optimize(child->children[0]);
@@ -60,8 +59,10 @@ void ProjectionPullup::InsertProjectionBelowOp(unique_ptr<LogicalOperator> &op, 
 
 			Optimize(child->children[0]);
 		}
+		// Fresh optimizer below projection barrier
+		ProjectionPullup next(optimizer, root);
+		next.Optimize(child->children[0]);
 	}
-	PopParents(*op);
 }
 
 void ProjectionPullup::Optimize(unique_ptr<LogicalOperator> &op) {
