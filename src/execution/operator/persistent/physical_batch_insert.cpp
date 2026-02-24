@@ -1,7 +1,6 @@
 #include "duckdb/execution/operator/persistent/physical_batch_insert.hpp"
 
 #include "duckdb/catalog/catalog_entry/duck_table_entry.hpp"
-#include "duckdb/common/mutex.hpp"
 #include "duckdb/execution/operator/persistent/batch_memory_manager.hpp"
 #include "duckdb/execution/operator/persistent/batch_task_manager.hpp"
 #include "duckdb/parallel/thread_context.hpp"
@@ -157,7 +156,7 @@ public:
 
 	BatchMemoryManager memory_manager;
 	BatchTaskManager<BatchInsertTask> task_manager;
-	mutex lock;
+	annotated_mutex lock;
 	DuckTableEntry &table;
 	idx_t row_group_size;
 	idx_t insert_count;
@@ -232,7 +231,7 @@ public:
 		auto result_collection_index = g_state.MergeCollections(context, merge_collections, *l_state.optimistic_writer);
 		merge_collections.clear();
 
-		lock_guard<mutex> l(g_state.lock);
+		annotated_lock_guard<annotated_mutex> l(g_state.lock);
 		auto &result_collection = g_state.table.GetStorage().GetOptimisticCollection(context, result_collection_index);
 		RowGroupBatchEntry new_entry(result_collection, merged_batch_index, result_collection_index,
 		                             RowGroupBatchType::FLUSHED);
@@ -383,7 +382,7 @@ void BatchInsertGlobalState::AddCollection(ClientContext &context, const idx_t b
 	if (batch_type == RowGroupBatchType::FLUSHED && writer) {
 		writer->WriteUnflushedRowGroups(optimistic_collection);
 	}
-	lock_guard<mutex> l(lock);
+	annotated_lock_guard<annotated_mutex> l(lock);
 	insert_count += new_count;
 	// add the collection to the batch index
 	RowGroupBatchEntry new_entry(optimistic_collection, batch_index, collection_index, batch_type);
@@ -477,7 +476,7 @@ SinkNextBatchType PhysicalBatchInsert::NextBatch(ExecutionContext &context, Oper
 
 		bool any_unblocked;
 		{
-			annotated_lock_guard<annotated_mutex> guard(memory_manager.lock);
+			const annotated_lock_guard<annotated_mutex> guard {memory_manager.lock};
 			any_unblocked = memory_manager.UnblockTasks();
 		}
 		if (!any_unblocked) {
@@ -488,7 +487,7 @@ SinkNextBatchType PhysicalBatchInsert::NextBatch(ExecutionContext &context, Oper
 	lstate.current_index = batch_index;
 
 	// unblock any blocked tasks
-	annotated_lock_guard<annotated_mutex> guard(memory_manager.lock);
+	const annotated_lock_guard<annotated_mutex> guard {memory_manager.lock};
 	memory_manager.UnblockTasks();
 
 	return SinkNextBatchType::READY;
@@ -518,7 +517,7 @@ SinkResultType PhysicalBatchInsert::Sink(ExecutionContext &context, DataChunk &i
 			// execute tasks while we wait (if any are available)
 			ExecuteTasks(context.client, gstate, lstate);
 
-			annotated_lock_guard<annotated_mutex> guard(memory_manager.lock);
+			const annotated_lock_guard<annotated_mutex> guard {memory_manager.lock};
 			if (!memory_manager.IsMinimumBatchIndex(batch_index)) {
 				//  we are not the minimum batch index and we have no memory available to buffer - block the task for
 				//  now
@@ -588,7 +587,7 @@ SinkCombineResultType PhysicalBatchInsert::Combine(ExecutionContext &context, Op
 	}
 
 	// unblock any blocked tasks
-	annotated_lock_guard<annotated_mutex> guard(memory_manager.lock);
+	const annotated_lock_guard<annotated_mutex> guard {memory_manager.lock};
 	memory_manager.UnblockTasks();
 
 	return SinkCombineResultType::FINISHED;
