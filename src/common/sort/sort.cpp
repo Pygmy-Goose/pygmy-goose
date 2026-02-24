@@ -1,5 +1,6 @@
 #include "duckdb/common/sorting/sort.hpp"
 
+#include "duckdb/common/mutex.hpp"
 #include "duckdb/common/type_visitor.hpp"
 #include "duckdb/common/sorting/sort_key.hpp"
 #include "duckdb/common/sorting/sorted_run.hpp"
@@ -173,8 +174,7 @@ public:
 	}
 
 	void TryIncreaseReservation(ClientContext &context, SortLocalSinkState &lstate, bool is_index_sort,
-	                            const unique_lock<mutex> &guard) {
-		VerifyLock(guard);
+	                            const annotated_unique_lock<annotated_mutex> &) {
 		D_ASSERT(!external);
 
 		// If we already got less than we requested last time, have to go external
@@ -207,7 +207,7 @@ public:
 	}
 
 	void AddSortedRun(SortLocalSinkState &lstate) {
-		auto guard = Lock();
+		annotated_lock_guard<annotated_mutex> guard(lock);
 		sorted_runs.push_back(std::move(lstate.sorted_run));
 		sorted_tuples += sorted_runs.back()->Count();
 	}
@@ -242,7 +242,8 @@ unique_ptr<GlobalSinkState> Sort::GetGlobalSinkState(ClientContext &context) con
 }
 
 //! Returns true if the Sink call is done (either because run size is small or because run was finalized)
-static bool TryFinishSink(SortGlobalSinkState &gstate, SortLocalSinkState &lstate, unique_lock<mutex> &guard) {
+static bool TryFinishSink(SortGlobalSinkState &gstate, SortLocalSinkState &lstate,
+                          annotated_unique_lock<annotated_mutex> &guard) {
 	// Check if we exceed the limit
 	const auto sorted_run_size = lstate.sorted_run->SizeInBytes();
 	if (sorted_run_size < lstate.maximum_run_size) {
@@ -282,13 +283,13 @@ SinkResultType Sort::Sink(ExecutionContext &context, DataChunk &chunk, OperatorS
 	lstate.sorted_run->Sink(lstate.key, lstate.payload);
 
 	// Try to finish this call to Sink
-	unique_lock<mutex> guard;
+	annotated_unique_lock<annotated_mutex> guard;
 	if (TryFinishSink(gstate, lstate, guard)) {
 		return SinkResultType::NEED_MORE_INPUT;
 	}
 
 	// Grab the lock, update the local state, and see if we can finish now
-	guard = gstate.Lock();
+	guard = annotated_unique_lock<annotated_mutex>(gstate.lock);
 	gstate.UpdateLocalState(lstate);
 	if (TryFinishSink(gstate, lstate, guard)) {
 		return SinkResultType::NEED_MORE_INPUT;
@@ -315,7 +316,7 @@ SinkCombineResultType Sort::Combine(ExecutionContext &context, OperatorSinkCombi
 	}
 
 	// Set any_combined under lock
-	auto guard = gstate.Lock();
+	annotated_unique_lock<annotated_mutex> guard(gstate.lock);
 	gstate.any_combined = true;
 	guard.unlock();
 
@@ -381,7 +382,7 @@ public:
 		if (!merger_global_state) {
 			return;
 		}
-		auto guard = merger_global_state->Lock();
+		annotated_lock_guard<annotated_mutex> guard(merger_global_state->lock);
 		merger.sorted_runs.clear();
 		sink.temporary_memory_state.reset();
 	}
@@ -485,7 +486,7 @@ SourceResultType Sort::MaterializeColumnData(ExecutionContext &context, Operator
 
 	// Merge into global output collection
 	{
-		auto guard = gstate.Lock();
+		annotated_lock_guard<annotated_mutex> guard(gstate.lock);
 		if (!gstate.column_data) {
 			gstate.column_data = std::move(local_column_data);
 		} else {
@@ -508,7 +509,7 @@ SourceResultType Sort::MaterializeColumnData(ExecutionContext &context, Operator
 
 unique_ptr<ColumnDataCollection> Sort::GetColumnData(OperatorSourceInput &input) const {
 	auto &gstate = input.global_state.Cast<SortGlobalSourceState>();
-	auto guard = gstate.Lock();
+	annotated_lock_guard<annotated_mutex> guard(gstate.lock);
 	return gstate.column_data->FetchCollection();
 }
 

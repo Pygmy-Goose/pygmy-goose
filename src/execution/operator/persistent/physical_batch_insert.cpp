@@ -1,6 +1,7 @@
 #include "duckdb/execution/operator/persistent/physical_batch_insert.hpp"
 
 #include "duckdb/catalog/catalog_entry/duck_table_entry.hpp"
+#include "duckdb/common/mutex.hpp"
 #include "duckdb/execution/operator/persistent/batch_memory_manager.hpp"
 #include "duckdb/execution/operator/persistent/batch_task_manager.hpp"
 #include "duckdb/parallel/thread_context.hpp"
@@ -476,8 +477,8 @@ SinkNextBatchType PhysicalBatchInsert::NextBatch(ExecutionContext &context, Oper
 
 		bool any_unblocked;
 		{
-			auto guard = memory_manager.Lock();
-			any_unblocked = memory_manager.UnblockTasks(guard);
+			annotated_lock_guard<annotated_mutex> guard(memory_manager.lock);
+			any_unblocked = memory_manager.UnblockTasks();
 		}
 		if (!any_unblocked) {
 			ExecuteTasks(context.client, gstate, lstate);
@@ -487,8 +488,8 @@ SinkNextBatchType PhysicalBatchInsert::NextBatch(ExecutionContext &context, Oper
 	lstate.current_index = batch_index;
 
 	// unblock any blocked tasks
-	auto guard = memory_manager.Lock();
-	memory_manager.UnblockTasks(guard);
+	annotated_lock_guard<annotated_mutex> guard(memory_manager.lock);
+	memory_manager.UnblockTasks();
 
 	return SinkNextBatchType::READY;
 }
@@ -517,16 +518,16 @@ SinkResultType PhysicalBatchInsert::Sink(ExecutionContext &context, DataChunk &i
 			// execute tasks while we wait (if any are available)
 			ExecuteTasks(context.client, gstate, lstate);
 
-			auto guard = memory_manager.Lock();
+			annotated_lock_guard<annotated_mutex> guard(memory_manager.lock);
 			if (!memory_manager.IsMinimumBatchIndex(batch_index)) {
 				//  we are not the minimum batch index and we have no memory available to buffer - block the task for
 				//  now
-				return memory_manager.BlockSink(guard, input.interrupt_state);
+				return memory_manager.BlockSink(input.interrupt_state);
 			}
 		}
 	}
 	if (!lstate.collection_index.IsValid()) {
-		lock_guard<mutex> l(gstate.lock);
+		annotated_lock_guard<annotated_mutex> l(gstate.lock);
 		// no collection yet: create a new one
 		lstate.CreateNewCollection(context.client, table, insert_types);
 	}
@@ -581,14 +582,14 @@ SinkCombineResultType PhysicalBatchInsert::Combine(ExecutionContext &context, Op
 		}
 	}
 	if (lstate.optimistic_writer) {
-		lock_guard<mutex> l(gstate.lock);
+		annotated_lock_guard<annotated_mutex> l(gstate.lock);
 		auto &optimistic_writer = gstate.table.GetStorage().GetOptimisticWriter(context.client);
 		optimistic_writer.Merge(*lstate.optimistic_writer);
 	}
 
 	// unblock any blocked tasks
-	auto guard = memory_manager.Lock();
-	memory_manager.UnblockTasks(guard);
+	annotated_lock_guard<annotated_mutex> guard(memory_manager.lock);
+	memory_manager.UnblockTasks();
 
 	return SinkCombineResultType::FINISHED;
 }
