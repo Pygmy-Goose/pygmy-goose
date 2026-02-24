@@ -66,6 +66,9 @@ void ProjectionPullup::InsertProjectionBelowOp(unique_ptr<LogicalOperator> &op, 
 
 void ProjectionPullup::Optimize(unique_ptr<LogicalOperator> &op) {
 	switch (op->type) {
+	// These operators depend on column order.
+	// If their immediate child is a projection, keep it and recurse into the projection’s child.
+	// If no projection is present, insert one, then recurse into the newly added projection’s child.
 	case LogicalOperatorType::LOGICAL_INTERSECT:
 	case LogicalOperatorType::LOGICAL_EXCEPT:
 	case LogicalOperatorType::LOGICAL_UNION: {
