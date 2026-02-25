@@ -410,7 +410,7 @@ ShellState::ShellState() : seenInterrupt(0), program_name("duckdb") {
 	    "(e.g. duckdb -unsigned).");
 	nullValue = "NULL";
 	strcpy(continuePrompt, "  ");
-	strcpy(continuePromptSelected, "‣ ");
+	strcpy(continuePromptSelected, "  ");
 	strcpy(scrollUpPrompt, "⇡ ");
 	strcpy(scrollDownPrompt, "⇣ ");
 }
@@ -1157,16 +1157,31 @@ unique_ptr<duckdb::ProgressBarDisplay> CreateProgressBar() {
 	return make_uniq<ShellProgressBarDisplay>();
 }
 
+static void RegisterShellLogger(duckdb::DuckDB &db, duckdb::shared_ptr<duckdb::LogStorage> storage_ptr) {
+	auto *db_instance = db.instance.get();
+	auto &log_manager = db_instance->GetLogManager();
+	log_manager.RegisterLogStorage("shell_log_storage", storage_ptr);
+	log_manager.SetLogStorage(*db_instance, "shell_log_storage");
+	log_manager.SetEnableLogging(db_instance);
+	log_manager.SetLogLevel(duckdb::LogLevel::LOG_WARNING);
+}
+
 void ShellState::OpenDB(ShellOpenFlags flags) {
+	// log storage to stdout
+	auto std_out_log_storage = duckdb::make_shared_ptr<ShellLogStorage>(*this);
+	duckdb::shared_ptr<duckdb::LogStorage> storage_ptr = std_out_log_storage;
+
 	if (!db) {
 		try {
 			db = make_uniq<duckdb::DuckDB>(zDbFilename.c_str(), &config);
+			RegisterShellLogger(*db, storage_ptr);
 			conn = make_uniq<duckdb::Connection>(*db);
 		} catch (std::exception &ex) {
 			duckdb::ErrorData error(ex);
 			PrintDatabaseError(error.Message());
 			if (flags == ShellOpenFlags::KEEP_ALIVE_ON_FAILURE) {
 				db = make_uniq<duckdb::DuckDB>(":memory:", &config);
+				RegisterShellLogger(*db, storage_ptr);
 				conn = make_uniq<duckdb::Connection>(*db);
 			} else {
 				exit(1);
@@ -1180,23 +1195,13 @@ void ShellState::OpenDB(ShellOpenFlags flags) {
 		db->LoadStaticExtension<duckdb::ShellExtension>();
 		if (safe_mode) {
 			ExecuteQuery("SET enable_external_access=false");
+			ExecuteQuery("SET lock_configuration=true");
 		}
 		if (stdout_is_console) {
 			ExecuteQuery("PRAGMA enable_progress_bar");
 			ExecuteQuery("PRAGMA enable_print_progress_bar");
 		}
 	}
-
-	// Register log storage to stdout
-	auto std_out_log_storage = duckdb::make_shared_ptr<ShellLogStorage>(*this);
-	duckdb::shared_ptr<duckdb::LogStorage> storage_ptr = std_out_log_storage;
-
-	auto *db_instance = db->instance.get();
-	auto &log_manager = db_instance->GetLogManager();
-	log_manager.RegisterLogStorage("shell_log_storage", storage_ptr);
-	log_manager.SetLogStorage(*db_instance, "shell_log_storage");
-	log_manager.SetEnableLogging(db_instance);
-	log_manager.SetLogLevel(duckdb::LogLevel::LOG_WARNING);
 }
 
 /*
@@ -1454,7 +1459,7 @@ void ShellState::ResetOutput() {
 				PrintF(PrintOutput::STDERR, "Failed: [%s]\n", zCmd.c_str());
 			} else {
 				/* Give the start/open/xdg-open command some time to get
-				** going before we continue, and potential delete the
+				** going before we continue, and potentially delete the
 				** zTempFile data file out from under it */
 				Sleep(2000);
 			}
@@ -1564,6 +1569,7 @@ MetadataResult ShellState::EnableSafeMode(ShellState &state, const vector<string
 	if (state.db) {
 		// db has been opened - disable external access
 		state.ExecuteQuery("SET enable_external_access=false");
+		state.ExecuteQuery("SET lock_configuration=true");
 	}
 	return MetadataResult::SUCCESS;
 }
@@ -2731,7 +2737,7 @@ int ShellState::RunOneSqlLine(InputMode mode, char *zSql) {
 
 /*
 ** Read input from *in and process it.  If *in==0 then input
-** is interactive - the user is typing it it.  Otherwise, input
+** is interactive - the user is typing it in.  Otherwise, input
 ** is coming from a file or device.  A prompt is issued and history
 ** is saved only if input is interactive.  An interrupt signal will
 ** cause this routine to exit immediately, unless input is interactive.
@@ -2867,7 +2873,8 @@ static string GetHomeDirectory() {
 }
 
 string ShellState::GetDefaultDuckDBRC() {
-	return GetHomeDirectory() + "/.duckdbrc";
+	duckdb::LocalFileSystem lfs;
+	return lfs.JoinPath(GetHomeDirectory(), ".duckdbrc");
 }
 
 /*
@@ -3100,7 +3107,7 @@ int wmain(int argc, wchar_t **wargv) {
 			if (data.zDbFilename.empty()) {
 				data.zDbFilename = z;
 			} else {
-				/* Excesss arguments are interpreted as SQL (or dot-commands) and
+				/* Excess arguments are interpreted as SQL (or dot-commands) and
 				** mean that nothing is read from stdin */
 				data.readStdin = false;
 				data.stdin_is_interactive = false;
@@ -3157,7 +3164,7 @@ int wmain(int argc, wchar_t **wargv) {
 	data.OpenDB();
 
 	/* Process the initialization file if there is one.  If no -init option
-	** is given on the command line, look for a file named ~/.sqliterc and
+	** is given on the command line, look for a file named ~/.duckdbrc and
 	** try to process it.
 	*/
 	if (!data.ProcessDuckDBRC(data.initFile.empty() ? nullptr : data.initFile.c_str()) && data.bail_on_error) {

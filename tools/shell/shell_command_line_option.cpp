@@ -63,12 +63,12 @@ MetadataResult EnableEcho(ShellState &state, const vector<string> &args) {
 }
 
 MetadataResult AllowUnredacted(ShellState &state, const vector<string> &args) {
-	state.config.options.allow_unredacted_secrets = true;
+	state.config.SetOptionByName("allow_unredacted_secrets", true);
 	return MetadataResult::SUCCESS;
 }
 
 MetadataResult AllowUnsigned(ShellState &state, const vector<string> &args) {
-	state.config.options.allow_unsigned_extensions = true;
+	state.config.SetOptionByName("allow_unsigned_extensions", true);
 	return MetadataResult::SUCCESS;
 }
 
@@ -160,7 +160,8 @@ static const CommandLineOption command_line_options[] = {
     {"f", 1, "FILENAME", EnableBatch, ProcessFile, "read/process named file and exit"},
     {"init", 1, "FILENAME", SetInitFile, nullptr, "read/process named file"},
     {"header", 0, "", nullptr, ToggleHeader<true>, "turn headers on"},
-    {"help", 0, "", EnableBatch, PrintHelpAndExit, "show this message"},
+    {"h", 0, "", EnableBatch, PrintHelpAndExit, "show help message"},
+    {"help", 0, "", EnableBatch, PrintHelpAndExit, "show help message"},
     {"html", 0, "", nullptr, ToggleOutputMode<RenderMode::HTML>, "set output mode to HTML"},
     {"interactive", 0, "", nullptr, DisableBatch, "force interactive I/O"},
     {"json", 0, "", nullptr, ToggleOutputMode<RenderMode::JSON>, "set output mode to 'json'"},

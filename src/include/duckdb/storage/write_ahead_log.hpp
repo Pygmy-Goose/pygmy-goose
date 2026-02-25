@@ -9,16 +9,12 @@
 #pragma once
 
 #include "duckdb/catalog/catalog_entry/index_catalog_entry.hpp"
-#include "duckdb/catalog/catalog_entry/scalar_macro_catalog_entry.hpp"
 #include "duckdb/catalog/catalog_entry/sequence_catalog_entry.hpp"
 #include "duckdb/catalog/catalog_entry/table_macro_catalog_entry.hpp"
 #include "duckdb/common/enums/wal_type.hpp"
-#include "duckdb/common/helper.hpp"
 #include "duckdb/common/serializer/buffered_file_writer.hpp"
 #include "duckdb/common/types/data_chunk.hpp"
-#include "duckdb/main/attached_database.hpp"
 #include "duckdb/storage/block.hpp"
-#include "duckdb/storage/storage_info.hpp"
 
 namespace duckdb {
 
@@ -119,6 +115,8 @@ public:
 	//! Truncate the WAL to a previous size, and clear anything currently set in the writer
 	void Truncate(idx_t size);
 	void Flush();
+	//! Increment the WAL entry count (for autocheckpoint threshold)
+	void IncrementWALEntriesCount();
 
 	void WriteCheckpoint(MetaBlockPointer meta_block);
 

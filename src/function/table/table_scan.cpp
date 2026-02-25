@@ -7,28 +7,29 @@
 #include "duckdb/common/serializer/deserializer.hpp"
 #include "duckdb/common/serializer/serializer.hpp"
 #include "duckdb/common/typedefs.hpp"
+#include "duckdb/common/types/value_map.hpp"
 #include "duckdb/common/unique_ptr.hpp"
 #include "duckdb/execution/index/art/art.hpp"
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/main/attached_database.hpp"
 #include "duckdb/main/client_config.hpp"
+#include "duckdb/main/client_data.hpp"
+#include "duckdb/main/settings.hpp"
 #include "duckdb/planner/expression.hpp"
 #include "duckdb/planner/expression/bound_columnref_expression.hpp"
+#include "duckdb/planner/expression/bound_comparison_expression.hpp"
+#include "duckdb/planner/expression/bound_constant_expression.hpp"
 #include "duckdb/planner/operator/logical_get.hpp"
-#include "duckdb/storage/data_table.hpp"
-#include "duckdb/storage/table/scan_state.hpp"
+#include "duckdb/planner/filter/conjunction_filter.hpp"
+#include "duckdb/planner/filter/in_filter.hpp"
+#include "duckdb/planner/filter/optional_filter.hpp"
 #include "duckdb/transaction/duck_transaction.hpp"
 #include "duckdb/transaction/local_storage.hpp"
+#include "duckdb/storage/data_table.hpp"
 #include "duckdb/storage/storage_index.hpp"
-#include "duckdb/main/client_data.hpp"
-#include "duckdb/planner/filter/optional_filter.hpp"
-#include "duckdb/planner/filter/in_filter.hpp"
-#include "duckdb/planner/expression/bound_constant_expression.hpp"
-#include "duckdb/planner/expression/bound_comparison_expression.hpp"
-#include "duckdb/planner/filter/conjunction_filter.hpp"
-#include "duckdb/common/types/value_map.hpp"
-#include "duckdb/main/settings.hpp"
+#include "duckdb/storage/table/data_table_info.hpp"
+#include "duckdb/storage/table/scan_state.hpp"
 
 namespace duckdb {
 
@@ -300,8 +301,7 @@ public:
 
 		do {
 			if (bind_data.is_create_index) {
-				storage.CreateIndexScan(l_state.scan_state, output,
-				                        TableScanType::TABLE_SCAN_COMMITTED_ROWS_OMIT_PERMANENTLY_DELETED);
+				storage.CreateIndexScan(l_state.scan_state, output);
 			} else if (CanRemoveFilterColumns()) {
 				l_state.all_columns.Reset();
 				storage.Scan(tx, l_state.all_columns, l_state.scan_state);
@@ -331,9 +331,7 @@ public:
 			}
 
 			// Before looping back, check if we are interrupted
-			if (context.interrupted) {
-				throw InterruptException();
-			}
+			context.InterruptCheck();
 		} while (true);
 	}
 
@@ -677,8 +675,8 @@ unique_ptr<GlobalTableFunctionState> TableScanInitGlobal(ClientContext &context,
 		return DuckTableScanInitGlobal(context, input, storage, bind_data);
 	}
 
-	auto scan_percentage = DBConfig::GetSetting<IndexScanPercentageSetting>(context);
-	auto scan_max_count = DBConfig::GetSetting<IndexScanMaxCountSetting>(context);
+	auto scan_percentage = Settings::Get<IndexScanPercentageSetting>(context);
+	auto scan_max_count = Settings::Get<IndexScanMaxCountSetting>(context);
 
 	auto total_rows = storage.GetTotalRows();
 	auto total_rows_from_percentage = LossyNumericCast<idx_t>(double(total_rows) * scan_percentage);
@@ -689,16 +687,19 @@ unique_ptr<GlobalTableFunctionState> TableScanInitGlobal(ClientContext &context,
 	set<row_t> row_ids;
 
 	info->BindIndexes(context, ART::TYPE_NAME);
-	info->GetIndexes().ScanEntries([&](IndexEntry &entry) {
+	for (auto &entry : indexes.IndexEntries()) {
 		auto &index = *entry.index;
 		if (index.GetIndexType() != ART::TYPE_NAME) {
-			return false;
+			continue;
 		}
 		D_ASSERT(index.IsBound());
 		auto &art = index.Cast<ART>();
 		index_scan = TryScanIndex(art, entry, column_list, input, filter_set, max_count, row_ids);
-		return index_scan;
-	});
+		if (index_scan) {
+			// found an index - break
+			break;
+		}
+	}
 
 	if (!index_scan) {
 		return DuckTableScanInitGlobal(context, input, storage, bind_data);
@@ -824,7 +825,7 @@ static bool TableSupportsPushdownExtract(const FunctionData &bind_data_ref, cons
 		return false;
 	}
 	auto column_type = column.GetType();
-	if (column_type.id() != LogicalTypeId::STRUCT) {
+	if (column_type.id() != LogicalTypeId::STRUCT && column_type.id() != LogicalTypeId::VARIANT) {
 		return false;
 	}
 	return true;

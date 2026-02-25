@@ -32,7 +32,10 @@ TupleDataCollection::TupleDataCollection(ClientContext &context, shared_ptr<Tupl
 }
 
 TupleDataCollection::~TupleDataCollection() {
-	ParallelDestroyTask<decltype(segments)>::Schedule(scheduler, segments);
+	static constexpr idx_t PARALLEL_DESTROY_THRESHOLD = 1048576;
+	if (count > PARALLEL_DESTROY_THRESHOLD) {
+		ParallelDestroyTask<decltype(segments)>::Schedule(scheduler, segments);
+	}
 }
 
 void TupleDataCollection::Initialize() {
@@ -93,7 +96,7 @@ idx_t TupleDataCollection::ChunkCount() const {
 }
 
 idx_t TupleDataCollection::SizeInBytes() const {
-	return data_size;
+	return data_size + stl_allocator->AllocationSize();
 }
 
 void TupleDataCollection::Unpin() {

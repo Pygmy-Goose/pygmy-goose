@@ -49,8 +49,8 @@ endif
 ifeq (${DISABLE_VPTR_SANITIZER}, 1)
 	DISABLE_SANITIZER_FLAG:=${DISABLE_SANITIZER_FLAG} -DDISABLE_VPTR_SANITIZER=1
 endif
-ifeq (${FORCE_SANITIZER}, 1)
-	DISABLE_SANITIZER_FLAG:=${DISABLE_SANITIZER_FLAG} -DFORCE_SANITIZER=1
+ifeq (${RELEASE_SANITIZER}, 1)
+	DISABLE_SANITIZER_FLAG:=${DISABLE_SANITIZER_FLAG} -DRELEASE_SANITIZER=1
 endif
 ifeq (${THREADSAN}, 1)
 	DISABLE_SANITIZER_FLAG:=${DISABLE_SANITIZER_FLAG} -DENABLE_THREAD_SANITIZER=1
@@ -298,6 +298,9 @@ endif
 ifneq (${DUCKDB_PREBUILT_LIBRARY}, )
 	CMAKE_VARS:=${CMAKE_VARS} -DPREBUILT_BINARY=${DUCKDB_PREBUILT_LIBRARY}
 endif
+ifdef REDUCE_SYMBOLS
+	CMAKE_VARS:=${CMAKE_VARS} -DREDUCE_SYMBOLS=1
+endif
 
 
 # Optional overrides
@@ -522,7 +525,6 @@ generate-files:
 	$(PYTHON) scripts/generate_storage_info.py
 	$(PYTHON) scripts/generate_metric_enums.py
 	$(PYTHON) scripts/generate_enum_util.py
-	$(PYTHON) scripts/generate_builtin_types.py
 # Run the formatter again after (re)generating the files
 	$(MAKE) format-main
 
@@ -532,9 +534,16 @@ bundle-setup:
 	mkdir -p bundle && \
 	cp src/libduckdb_static.a bundle/. && \
 	cp third_party/*/libduckdb_*.a bundle/. && \
+	cp extension/libduckdb_generated_extension_loader.a bundle/. && \
 	cp extension/*/lib*_extension.a bundle/. && \
 	mkdir -p vcpkg_installed && \
 	find vcpkg_installed -name '*.a' -exec cp {} bundle/. \; && \
+	mkdir -p _deps && \
+	if [ -f linked_libs.txt ]; then \
+		while IFS= read -r libline || [ -n "$$libline" ]; do \
+			find _deps -path "*/$$libline" -exec cp {} bundle/. \; 2>/dev/null || true; \
+		done < linked_libs.txt; \
+	fi && \
 	cd bundle && \
 	find . -name '*.a' -exec mkdir -p {}.objects \; -exec mv {} {}.objects \; && \
 	find . -name '*.a' -execdir ${AR} -x {} \;
@@ -556,4 +565,5 @@ gather-libs: release
 	mkdir -p libs && \
 	cp src/libduckdb_static.a libs/. && \
 	cp third_party/*/libduckdb_*.a libs/. && \
+	cp extension/libduckdb_generated_extension_loader.a libs/. && \
 	cp extension/*/lib*_extension.a libs/.
