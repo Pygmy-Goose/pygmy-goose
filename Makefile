@@ -1,4 +1,4 @@
-.PHONY: all opt unit clean debug release test unittest allunit benchmark docs doxygen format sqlite
+.PHONY: all opt unit clean debug release test unittest allunit benchmark docs doxygen format sqlite smoke
 
 all: release
 opt: release
@@ -398,6 +398,9 @@ unittest_release: release
 
 unittestci:
 	$(PYTHON) scripts/run_tests_one_by_one.py build/debug/test/unittest --time_execution
+
+smoke:
+	$(PYTHON) scripts/run_tests_one_by_one.py build/relassert/test/unittest --max-failures 5 "[smoke]"
 
 unittestarrow:
 	build/debug/test/unittest "[arrow]"

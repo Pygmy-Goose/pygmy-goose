@@ -64,6 +64,13 @@ parser.add_argument(
 )
 parser.add_argument('--valgrind', action='store_true', help='Run the tests with valgrind', default=False)
 parser.add_argument("--test-config", action='store', help='Path to the test configuration file', default=None)
+parser.add_argument(
+    '--max-failures',
+    action='store',
+    type=int,
+    default=0,
+    help='Stop after this many failures (0 disables this limit)',
+)
 
 args, extra_args = parser.parse_known_args()
 
@@ -85,6 +92,9 @@ profile = args.profile
 assertions = args.no_assertions
 time_execution = args.time_execution
 timeout = args.timeout
+max_failures = args.max_failures
+if max_failures < 0:
+    parser.error('--max-failures must be >= 0')
 
 summarize_failures = args.summarize_failures
 if summarize_failures is None:
@@ -132,6 +142,9 @@ def fail():
     global all_passed
     all_passed = False
     if fast_fail:
+        exit(1)
+    if max_failures > 0 and len(error_container) >= max_failures:
+        print(f"Reached maximum failures ({max_failures}), stopping early.")
         exit(1)
 
 

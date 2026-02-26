@@ -8,8 +8,10 @@
 #include "test_config.hpp"
 
 #include <functional>
+#include <fstream>
 #include <string>
 #include <system_error>
+#include <unordered_set>
 #include <vector>
 
 using namespace duckdb;
@@ -32,6 +34,27 @@ static void listFiles(FileSystem &fs, const string &path, std::function<void(con
 static bool endsWith(const string &mainStr, const string &toMatch) {
 	return (mainStr.size() >= toMatch.size() &&
 	        mainStr.compare(mainStr.size() - toMatch.size(), toMatch.size(), toMatch) == 0);
+}
+
+static string NormalizePath(const string &path) {
+	return StringUtil::Replace(path, "\\", "/");
+}
+
+static unordered_set<string> LoadSmokeTests(FileSystem &fs, const string &path) {
+	unordered_set<string> smoke_tests;
+	if (!fs.FileExists(path)) {
+		return smoke_tests;
+	}
+	std::ifstream smoke_file(path);
+	string line;
+	while (std::getline(smoke_file, line)) {
+		StringUtil::Trim(line);
+		if (line.empty() || line[0] == '#') {
+			continue;
+		}
+		smoke_tests.insert(NormalizePath(line));
+	}
+	return smoke_tests;
 }
 
 template <bool AUTO_SWITCH_TEST_DIR = false>
@@ -156,6 +179,9 @@ static string ParseGroupFromPath(string file) {
 namespace duckdb {
 
 void RegisterSqllogictests() {
+	duckdb::unique_ptr<FileSystem> fs = FileSystem::CreateLocal();
+	auto smoke_tests = LoadSmokeTests(*fs, "test/smoke_tests.list");
+
 	vector<string> excludes = {
 	    // tested separately
 	    "test/select1.test", "test/select2.test", "test/select3.test", "test/select4.test",
@@ -195,7 +221,6 @@ void RegisterSqllogictests() {
 	    "test/index/view/10/slt_good_2.test",
 	    // strange error in hash comparison, results appear correct...
 	    "test/index/random/10/slt_good_7.test", "test/index/random/10/slt_good_9.test"};
-	duckdb::unique_ptr<FileSystem> fs = FileSystem::CreateLocal();
 	listFiles(*fs, fs->JoinPath(fs->JoinPath("third_party", "sqllogictest"), "test"), [&](const string &path) {
 		if (endsWith(path, ".test")) {
 			for (auto &excl : excludes) {
@@ -208,8 +233,13 @@ void RegisterSqllogictests() {
 	});
 	listFiles(*fs, "test", [&](const string &path) {
 		if (endsWith(path, ".test") || endsWith(path, ".test_slow") || endsWith(path, ".test_coverage")) {
+			auto normalized_path = NormalizePath(path);
 			// parse the name / group from the test
-			REGISTER_TEST_CASE(testRunner<false>, StringUtil::Replace(path, "\\", "/"), ParseGroupFromPath(path));
+			auto tags = ParseGroupFromPath(path);
+			if (smoke_tests.find(normalized_path) != smoke_tests.end()) {
+				tags += "[smoke]";
+			}
+			REGISTER_TEST_CASE(testRunner<false>, normalized_path, tags);
 		}
 	});
 
@@ -217,7 +247,12 @@ void RegisterSqllogictests() {
 		listFiles(*fs, extension_test_path, [&](const string &path) {
 			if (endsWith(path, ".test") || endsWith(path, ".test_slow") || endsWith(path, ".test_coverage")) {
 				auto fun = testRunner<true>;
-				REGISTER_TEST_CASE(fun, StringUtil::Replace(path, "\\", "/"), ParseGroupFromPath(path));
+				auto normalized_path = NormalizePath(path);
+				auto tags = ParseGroupFromPath(path);
+				if (smoke_tests.find(normalized_path) != smoke_tests.end()) {
+					tags += "[smoke]";
+				}
+				REGISTER_TEST_CASE(fun, normalized_path, tags);
 			}
 		});
 	}
