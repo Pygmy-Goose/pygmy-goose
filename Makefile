@@ -400,7 +400,7 @@ unittestci:
 	$(PYTHON) scripts/run_tests_one_by_one.py build/debug/test/unittest --time_execution
 
 smoke:
-	$(PYTHON) scripts/run_tests_one_by_one.py build/relassert/test/unittest --max-failures 5 "[smoke]"
+	$(PYTHON) scripts/run_tests_one_by_one.py build/relassert/test/unittest --silent --max-failures 5 "[smoke]"
 
 unittestarrow:
 	build/debug/test/unittest "[arrow]"
