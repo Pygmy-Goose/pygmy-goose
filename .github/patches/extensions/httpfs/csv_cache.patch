@@ -1,0 +1,31 @@
+commit a49556dc8d3db34aa8a50c108d7e1729eba04daa
+Author: dentiny <dentinyhao@gmail.com>
+Date:   Thu Feb 26 06:58:16 2026 +0000
+
+    Patch CSV cached reader change
+
+diff --git a/duckdb b/duckdb
+index 8624398..928e912 160000
+--- a/duckdb
++++ b/duckdb
+@@ -1 +1 @@
+-Subproject commit 862439822d782aad5142c4c0fcd15afe073e3533
++Subproject commit 928e9127e2da0c8b91beb6fd5efcd12e76ec8cb3
+diff --git a/test/sql/logging/file_system_logging.test b/test/sql/logging/file_system_logging.test
+index 6aa2ed0..54babde 100644
+--- a/test/sql/logging/file_system_logging.test
++++ b/test/sql/logging/file_system_logging.test
+@@ -43,7 +43,6 @@ require httpfs
+ statement ok
+ FROM 'https://github.com/duckdb/duckdb/raw/main/data/csv/customer.csv'
+ 
+-# FIXME: investigate why we call READ twice?
+ query IIII
+ SELECT scope, type, log_level, regexp_replace(message, '\"path\":.*test.csv"', '"test.csv"')
+ FROM duckdb_logs
+@@ -52,5 +51,4 @@ ORDER BY timestamp
+ ----
+ CONNECTION	FileSystem	TRACE	{"fs":"HTTPFileSystem","path":"https://github.com/duckdb/duckdb/raw/main/data/csv/customer.csv","op":"OPEN"}
+ CONNECTION	FileSystem	TRACE	{"fs":"HTTPFileSystem","path":"https://github.com/duckdb/duckdb/raw/main/data/csv/customer.csv","op":"READ","bytes":"1276","pos":"0"}
+-CONNECTION	FileSystem	TRACE	{"fs":"HTTPFileSystem","path":"https://github.com/duckdb/duckdb/raw/main/data/csv/customer.csv","op":"READ","bytes":"0","pos":"1276"}
+ CONNECTION	FileSystem	TRACE	{"fs":"HTTPFileSystem","path":"https://github.com/duckdb/duckdb/raw/main/data/csv/customer.csv","op":"CLOSE"}
