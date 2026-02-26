@@ -1,16 +1,9 @@
-commit a49556dc8d3db34aa8a50c108d7e1729eba04daa
+commit 289d6283aabb40d39b21a7180b6f28515d277a62
 Author: dentiny <dentinyhao@gmail.com>
 Date:   Thu Feb 26 06:58:16 2026 +0000
 
     Patch CSV cached reader change
 
-diff --git a/duckdb b/duckdb
-index 8624398..928e912 160000
---- a/duckdb
-+++ b/duckdb
-@@ -1 +1 @@
--Subproject commit 862439822d782aad5142c4c0fcd15afe073e3533
-+Subproject commit 928e9127e2da0c8b91beb6fd5efcd12e76ec8cb3
 diff --git a/test/sql/logging/file_system_logging.test b/test/sql/logging/file_system_logging.test
 index 6aa2ed0..54babde 100644
 --- a/test/sql/logging/file_system_logging.test
