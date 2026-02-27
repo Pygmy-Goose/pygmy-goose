@@ -47,11 +47,13 @@ def run_batch(unittest_bin: str, batch):
         + f"{shlex.quote(unittest_bin)} --use-colour yes -f /tmp/duckdb_smoke_batch.txt"
     )
     parts = [
+        "### failed test batch ###",
+        "",
         "=== stdout ===",
-        proc.stdout,
+        proc.stdout.strip(),
         "",
         "=== stderr ===",
-        proc.stderr,
+        proc.stderr.strip(),
         "",
         "=== reproduce ===",
         rerun_cmd,
