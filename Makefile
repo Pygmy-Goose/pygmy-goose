@@ -23,6 +23,8 @@ MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJ_DIR := $(dir $(MKFILE_PATH))
 
 PYTHON ?= python3
+WORKERS ?= $(shell nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo 4)
+SMOKE_UNITTEST ?= build/relassert/test/unittest
 
 ifeq ($(GEN),ninja)
 	GENERATOR=-G "Ninja"
@@ -400,7 +402,7 @@ unittestci:
 	$(PYTHON) scripts/run_tests_one_by_one.py build/debug/test/unittest --time_execution
 
 smoke:
-	$(PYTHON) scripts/run_tests_one_by_one.py build/relassert/test/unittest --silent --max-failures 5 "[smoke]"
+	$(PYTHON) scripts/ci/run_smoke_tests.py $(SMOKE_UNITTEST) $(WORKERS)
 
 unittestarrow:
 	build/debug/test/unittest "[arrow]"
