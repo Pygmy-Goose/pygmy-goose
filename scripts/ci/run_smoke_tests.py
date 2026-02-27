@@ -75,20 +75,19 @@ def main():
     print(f"found {len(tests)} tests, group_size={GROUP_SIZE}, workers={workers}")
 
     batches = list(chunked(tests, GROUP_SIZE))
-    failed_logs = []
+    failed_count = 0
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         futures = [executor.submit(run_batch, unittest_bin, batch) for batch in batches]
         for future in concurrent.futures.as_completed(futures):
             log = future.result()
             if log is not None:
-                failed_logs.append(log)
+                failed_count += 1
+                print(log, end="")
+                print("========================")
 
-    if failed_logs:
-        for log in failed_logs:
-            print(log, end="")
-            print("========================")
-        print(f"error: found {len(failed_logs)} test failures")
+    if failed_count:
+        print(f"error: found {failed_count} test failures")
         return 1
 
     print("all smoke tests passed.")
