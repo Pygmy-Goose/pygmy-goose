@@ -64,14 +64,6 @@ parser.add_argument(
 )
 parser.add_argument('--valgrind', action='store_true', help='Run the tests with valgrind', default=False)
 parser.add_argument("--test-config", action='store', help='Path to the test configuration file', default=None)
-parser.add_argument('--silent', action='store_true', help='Only print failing tests and their failure output')
-parser.add_argument(
-    '--max-failures',
-    action='store',
-    type=int,
-    default=0,
-    help='Stop after this many failures (0 disables this limit)',
-)
 
 args, extra_args = parser.parse_known_args()
 
@@ -93,9 +85,6 @@ profile = args.profile
 assertions = args.no_assertions
 time_execution = args.time_execution
 timeout = args.timeout
-max_failures = args.max_failures
-if max_failures < 0:
-    parser.error('--max-failures must be >= 0')
 
 summarize_failures = args.summarize_failures
 if summarize_failures is None:
@@ -144,9 +133,6 @@ def fail():
     all_passed = False
     if fast_fail:
         exit(1)
-    if max_failures > 0 and len(error_container) >= max_failures:
-        print(f"Reached maximum failures ({max_failures}), stopping early.")
-        exit(1)
 
 
 def parse_assertions(stdout):
@@ -189,7 +175,7 @@ def print_interval_background(interval):
             current_ticker = 0
 
 
-def launch_test(test, list_of_tests=False, test_number=None, test_case_name=None):
+def launch_test(test, list_of_tests=False):
     global is_active
     # start the background thread
     is_active = True
@@ -216,8 +202,6 @@ def launch_test(test, list_of_tests=False, test_number=None, test_case_name=None
             test_cmd = test_cmd + ['--test-config', args.test_config]
         res = subprocess.run(test_cmd, stdout=unittest_stdout, stderr=unittest_stderr, timeout=timeout, env=env)
     except subprocess.TimeoutExpired as e:
-        if args.silent and not list_of_tests and test_number is not None and test_case_name is not None:
-            print(f"[{test_number}/{test_count}]: {test_case_name}", end="", flush=True)
         if list_of_tests:
             print("[TIMED OUT]", flush=True)
         else:
@@ -250,11 +234,7 @@ def launch_test(test, list_of_tests=False, test_number=None, test_case_name=None
         additional_data += " (" + parse_assertions(stdout) + ")"
     if args.time_execution:
         additional_data += f" (Time: {end - start:.4f} seconds)"
-    test_failed = not (res.returncode is None or res.returncode == 0)
-    if args.silent and test_failed and not list_of_tests and test_number is not None and test_case_name is not None:
-        print(f"[{test_number}/{test_count}]: {test_case_name}", end="", flush=True)
-    if not args.silent or test_failed:
-        print(additional_data, flush=True)
+    print(additional_data, flush=True)
     if profile:
         print(f'{test_case}	{end - start}')
     if res.returncode is None or res.returncode == 0:
@@ -292,9 +272,9 @@ STDERR
 
 def run_tests_one_by_one():
     for test_number, test_case in enumerate(test_cases):
-        if not profile and not args.silent:
+        if not profile:
             print(f"[{test_number}/{test_count}]: {test_case}", end="", flush=True)
-        launch_test([test_case], test_number=test_number, test_case_name=test_case)
+        launch_test([test_case])
 
 
 def escape_test_case(test_case):
