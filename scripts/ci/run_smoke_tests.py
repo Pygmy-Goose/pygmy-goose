@@ -40,7 +40,6 @@ def run_batch(unittest_bin: str, batch):
     if proc.returncode == 0:
         return None
 
-    command = f"Command: {unittest_bin} --use-colour yes -f <batch-file>"
     rerun_cmd = (
         "printf '%s\\n' "
         + " ".join(shlex.quote(test) for test in batch)
@@ -48,8 +47,6 @@ def run_batch(unittest_bin: str, batch):
         + f"{shlex.quote(unittest_bin)} --use-colour yes -f /tmp/duckdb_smoke_batch.txt"
     )
     parts = [
-        command,
-        "",
         "=== stdout ===",
         proc.stdout,
         "",
