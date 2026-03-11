@@ -1,8 +1,8 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: light)" srcset="logo/DuckDB_Logo-horizontal.svg">
-    <source media="(prefers-color-scheme: dark)" srcset="logo/DuckDB_Logo-horizontal-dark-mode.svg">
-    <img alt="DuckDB logo" src="logo/DuckDB_Logo-horizontal.svg" height="100">
+    <source media="(prefers-color-scheme: light)" srcset="logo/indian-pygmy-goose.svg">
+    <source media="(prefers-color-scheme: dark)" srcset="logo/indian-pygmy-goose.svg">
+    <img alt="Pygmy Goose logo" src="logo/indian-pygmy-goose.svg" height="100">
   </picture>
 </div>
 <br>
