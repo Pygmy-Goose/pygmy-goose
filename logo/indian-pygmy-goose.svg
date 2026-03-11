@@ -1,0 +1,159 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="410 0 410 440" width="410" height="440">
+  <defs>
+    <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4aa8c8"/>
+      <stop offset="60%" stop-color="#2a7fa0"/>
+      <stop offset="100%" stop-color="#1a5f7a"/>
+    </linearGradient>
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c8e8f5"/>
+      <stop offset="100%" stop-color="#a0d4ee"/>
+    </linearGradient>
+    <linearGradient id="backGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a4a2e"/>
+      <stop offset="40%" stop-color="#2d6e42"/>
+      <stop offset="70%" stop-color="#1e5c38"/>
+      <stop offset="100%" stop-color="#0f3320"/>
+    </linearGradient>
+    <linearGradient id="wingGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#244d32"/>
+      <stop offset="50%" stop-color="#3a7a4e" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#1a3d28"/>
+    </linearGradient>
+    <linearGradient id="iridGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#4aab6a" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#6fcf8a" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#3a9e58" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#1a4a2e" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="iridGradR" x1="1" y1="0" x2="0" y2="0">
+      <stop offset="0%" stop-color="#4aab6a" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#6fcf8a" stop-opacity="0.45"/>
+      <stop offset="60%" stop-color="#3a9e58" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#1a4a2e" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bellyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5f5ee"/>
+      <stop offset="100%" stop-color="#ddddd0"/>
+    </linearGradient>
+    <linearGradient id="headWhiteGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e8e8e0"/>
+    </linearGradient>
+    <linearGradient id="crownGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a3a24"/>
+      <stop offset="60%" stop-color="#0e2818"/>
+      <stop offset="100%" stop-color="#081510"/>
+    </linearGradient>
+    <radialGradient id="lilyGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#5a9e40"/>
+      <stop offset="100%" stop-color="#3a6e28"/>
+    </radialGradient>
+    <radialGradient id="shadowGrad" cx="50%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#1a5060" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#1a5060" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5"/>
+    </filter>
+    <filter id="verysoft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect x="0" y="0" width="820" height="440" fill="url(#skyGrad)"/>
+  <ellipse cx="100" cy="205" rx="90" ry="55" fill="#6aaa50" opacity="0.22"/>
+  <ellipse cx="720" cy="200" rx="100" ry="60" fill="#5a9840" opacity="0.18"/>
+  <rect x="0" y="265" width="820" height="175" fill="url(#waterGrad)"/>
+
+  <!-- Water shimmer -->
+  <g opacity="0.15" stroke="#a0ddf5" stroke-width="1">
+    <line x1="20"  y1="282" x2="160" y2="282"/>
+    <line x1="200" y1="292" x2="380" y2="292"/>
+    <line x1="440" y1="285" x2="580" y2="285"/>
+    <line x1="620" y1="296" x2="800" y2="296"/>
+    <line x1="40"  y1="312" x2="200" y2="312"/>
+    <line x1="240" y1="322" x2="420" y2="322"/>
+    <line x1="460" y1="316" x2="620" y2="316"/>
+    <line x1="660" y1="328" x2="810" y2="328"/>
+  </g>
+
+  <!-- Lily pads -->
+  <ellipse cx="155" cy="292" rx="36" ry="13" fill="url(#lilyGrad)" opacity="0.8"/>
+  <ellipse cx="660" cy="296" rx="32" ry="12" fill="url(#lilyGrad)" opacity="0.75"/>
+
+  <!-- BIRD A (left, facing right) -->
+  <g id="birdA">
+    <ellipse cx="210" cy="278" rx="58" ry="11" fill="url(#shadowGrad)" filter="url(#verysoft)"/>
+    <path d="M138,224 Q116,216 112,228 Q116,241 138,244 Z" fill="url(#backGrad)"/>
+    <path d="M136,228 Q120,220 116,228 Q120,236 136,234 Z" fill="#0f2a1a"/>
+    <ellipse cx="206" cy="242" rx="76" ry="37" fill="url(#backGrad)"/>
+    <ellipse cx="210" cy="255" rx="58" ry="20" fill="url(#bellyGrad)"/>
+    <path d="M140,224 Q186,210 256,214 Q278,220 280,231 Q256,243 184,245 Q140,241 135,231 Z" fill="url(#wingGrad)"/>
+    <path d="M140,224 Q186,210 256,214 Q278,220 280,231 Q256,243 184,245 Q140,241 135,231 Z" fill="url(#iridGrad)" opacity="0.7"/>
+    <g stroke="#0a2018" stroke-width="0.7" opacity="0.35" fill="none">
+      <path d="M150,228 Q198,222 255,225"/>
+      <path d="M148,233 Q196,228 253,231"/>
+      <path d="M150,238 Q196,234 254,237"/>
+    </g>
+    <path d="M255,215 C260,205 264,195 270,185 C276,174 286,167 300,166 C315,165 328,170 336,182 C344,194 342,210 334,220 C326,228 314,231 300,232 C286,233 272,236 264,240 C257,243 250,241 247,236 C244,230 248,222 255,215 Z" fill="url(#crownGrad)"/>
+    <path d="M276,170 C285,163 298,162 310,167 C322,172 330,184 328,197 C326,210 316,220 303,222 C290,224 278,216 274,204 C270,192 271,179 276,170 Z" fill="url(#headWhiteGrad)"/>
+    <path d="M249,234 C258,244 276,248 296,244 C298,249 296,253 292,254 C276,258 257,254 246,244 Z" fill="#e8e8e0" opacity="0.88"/>
+    <circle cx="305" cy="193" r="7.5" fill="#0e2010"/>
+    <circle cx="305" cy="193" r="5.5" fill="#7a3010"/>
+    <circle cx="305.5" cy="193" r="3.2" fill="#0a0a08"/>
+    <circle cx="307" cy="191.5" r="1.2" fill="white" opacity="0.85"/>
+    <path d="M330,188 Q344,185 348,190 Q346,197 338,199 Q330,197 328,192 Z" fill="#c8a090"/>
+    <path d="M330,189 Q342,186 346,190" stroke="#a07060" stroke-width="1" fill="none" opacity="0.7"/>
+    <ellipse cx="339" cy="191" rx="2.5" ry="1.5" fill="#b09080" opacity="0.6"/>
+    <ellipse cx="346" cy="193" rx="2" ry="1.8" fill="#8a6050"/>
+    <line x1="198" y1="272" x2="193" y2="285" stroke="#c8a090" stroke-width="2.2" opacity="0.45"/>
+    <line x1="222" y1="274" x2="218" y2="287" stroke="#c8a090" stroke-width="2.2" opacity="0.38"/>
+    <ellipse cx="210" cy="273" rx="80" ry="11" fill="none" stroke="#a8d8ee" stroke-width="1.1" opacity="0.45"/>
+    <ellipse cx="210" cy="273" rx="98"  ry="15" fill="none" stroke="#a8d8ee" stroke-width="0.6" opacity="0.25"/>
+    <g filter="url(#softBlur)" opacity="0.25">
+      <ellipse cx="210" cy="316" rx="66" ry="25" fill="#2a5a38"/>
+      <ellipse cx="308" cy="302" rx="18" ry="10" fill="#1a3820"/>
+    </g>
+  </g>
+
+  <!-- BIRD B (right, facing left — mirror of A) -->
+  <g transform="translate(820,0) scale(-1,1)">
+    <ellipse cx="210" cy="278" rx="58" ry="11" fill="url(#shadowGrad)" filter="url(#verysoft)"/>
+    <path d="M138,224 Q116,216 112,228 Q116,241 138,244 Z" fill="url(#backGrad)"/>
+    <path d="M136,228 Q120,220 116,228 Q120,236 136,234 Z" fill="#0f2a1a"/>
+    <ellipse cx="206" cy="242" rx="76" ry="37" fill="url(#backGrad)"/>
+    <ellipse cx="210" cy="255" rx="58" ry="20" fill="url(#bellyGrad)"/>
+    <path d="M140,224 Q186,210 256,214 Q278,220 280,231 Q256,243 184,245 Q140,241 135,231 Z" fill="url(#wingGrad)"/>
+    <path d="M140,224 Q186,210 256,214 Q278,220 280,231 Q256,243 184,245 Q140,241 135,231 Z" fill="url(#iridGradR)" opacity="0.7"/>
+    <g stroke="#0a2018" stroke-width="0.7" opacity="0.35" fill="none">
+      <path d="M150,228 Q198,222 255,225"/>
+      <path d="M148,233 Q196,228 253,231"/>
+      <path d="M150,238 Q196,234 254,237"/>
+    </g>
+    <path d="M255,215 C260,205 264,195 270,185 C276,174 286,167 300,166 C315,165 328,170 336,182 C344,194 342,210 334,220 C326,228 314,231 300,232 C286,233 272,236 264,240 C257,243 250,241 247,236 C244,230 248,222 255,215 Z" fill="url(#crownGrad)"/>
+    <path d="M276,170 C285,163 298,162 310,167 C322,172 330,184 328,197 C326,210 316,220 303,222 C290,224 278,216 274,204 C270,192 271,179 276,170 Z" fill="url(#headWhiteGrad)"/>
+    <path d="M249,234 C258,244 276,248 296,244 C298,249 296,253 292,254 C276,258 257,254 246,244 Z" fill="#e8e8e0" opacity="0.88"/>
+    <circle cx="305" cy="193" r="7.5" fill="#0e2010"/>
+    <circle cx="305" cy="193" r="5.5" fill="#7a3010"/>
+    <circle cx="305.5" cy="193" r="3.2" fill="#0a0a08"/>
+    <circle cx="307" cy="191.5" r="1.2" fill="white" opacity="0.85"/>
+    <path d="M330,188 Q344,185 348,190 Q346,197 338,199 Q330,197 328,192 Z" fill="#c8a090"/>
+    <path d="M330,189 Q342,186 346,190" stroke="#a07060" stroke-width="1" fill="none" opacity="0.7"/>
+    <ellipse cx="339" cy="191" rx="2.5" ry="1.5" fill="#b09080" opacity="0.6"/>
+    <ellipse cx="346" cy="193" rx="2" ry="1.8" fill="#8a6050"/>
+    <line x1="198" y1="272" x2="193" y2="285" stroke="#c8a090" stroke-width="2.2" opacity="0.45"/>
+    <line x1="222" y1="274" x2="218" y2="287" stroke="#c8a090" stroke-width="2.2" opacity="0.38"/>
+    <ellipse cx="210" cy="273" rx="80" ry="11" fill="none" stroke="#a8d8ee" stroke-width="1.1" opacity="0.45"/>
+    <ellipse cx="210" cy="273" rx="98"  ry="15" fill="none" stroke="#a8d8ee" stroke-width="0.6" opacity="0.25"/>
+    <g filter="url(#softBlur)" opacity="0.25">
+      <ellipse cx="210" cy="316" rx="66" ry="25" fill="#2a5a38"/>
+      <ellipse cx="308" cy="302" rx="18" ry="10" fill="#1a3820"/>
+    </g>
+  </g>
+
+  <!-- Labels -->
+  <text x="615" y="413" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#1a4a60" font-style="italic" opacity="0.9">Nettapus coromandelianus</text>
+  <text x="615" y="430" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#2a6a80" opacity="0.7">(Indian Pygmy Goose — actually a duck)</text>
+</svg>
