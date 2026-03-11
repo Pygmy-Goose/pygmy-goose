@@ -65,7 +65,7 @@ extensions = [
     '.py',
     '.java',
 ]
-formatted_directories = ['src', 'benchmark', 'test', 'tools', 'examples', 'extension', 'scripts']
+formatted_directories = ['src', 'test', 'tools', 'scripts']
 ignored_files = [
     'tpch_constants.hpp',
     'tpcds_constants.hpp',
