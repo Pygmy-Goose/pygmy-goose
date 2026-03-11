@@ -8,10 +8,20 @@
 <br>
 
 <p align="center">
-  <a href="https://github.com/duckdb/duckdb/actions"><img src="https://github.com/duckdb/duckdb/actions/workflows/Main.yml/badge.svg?branch=main" alt="Github Actions Badge"></a>
+  <a href="https://github.com/Pygmy-Goose/pygmy-goose/actions"><img src="https://github.com/Pygmy-Goose/pygmy-goose/actions/workflows/Main.yml/badge.svg?branch=main" alt="Github Actions Badge"></a>
   <a href="https://discord.gg/tcvwpjfnZx"><img src="https://shields.io/discord/909674491309850675" alt="discord" /></a>
-  <a href="https://github.com/duckdb/duckdb/releases/"><img src="https://img.shields.io/github/v/release/duckdb/duckdb?color=brightgreen&display_name=tag&logo=duckdb&logoColor=white" alt="Latest Release"></a>
+  <a href="https://github.com/Pygmy-Goose/pygmy-goose/releases/"><img src="https://img.shields.io/github/v/release/Pygmy-Goose/pygmy-goose?color=brightgreen&display_name=tag&logo=duckdb&logoColor=white" alt="Latest Release"></a>
 </p>
+
+# Pygmy Goose
+
+The Indian Pygmy Goose is the smallest species of Duck on the planet. Yes, it's a Duck although it's called a Goose.
+
+DuckDB is a leading open source project in the realm of columnar databases. It has high quality code and an extensive CI that takes many hours.
+
+For other projects active in the columnar database space, it's appealing to make small libraries out of DuckDB code so it could be reused in our projects.
+
+If you're one of those projects, do get in touch so we can share the maintenance cost.
 
 ## DuckDB
 
@@ -20,32 +30,3 @@ DuckDB is a high-performance analytical database system. It is designed to be fa
 DuckDB is available as a [standalone CLI application](https://duckdb.org/docs/stable/clients/cli/overview) and has clients for [Python](https://duckdb.org/docs/stable/clients/python/overview), [R](https://duckdb.org/docs/stable/clients/r), [Java](https://duckdb.org/docs/stable/clients/java), [Wasm](https://duckdb.org/docs/stable/clients/wasm/overview), etc., with deep integrations with packages such as [pandas](https://duckdb.org/docs/guides/python/sql_on_pandas) and [dplyr](https://duckdb.org/docs/stable/clients/r#duckplyr-dplyr-api).
 
 For more information on using DuckDB, please refer to the [DuckDB documentation](https://duckdb.org/docs/stable/).
-
-## Installation
-
-If you want to install DuckDB, please see [our installation page](https://duckdb.org/docs/installation/) for instructions.
-
-## Data Import
-
-For CSV files and Parquet files, data import is as simple as referencing the file in the FROM clause:
-
-```sql
-SELECT * FROM 'myfile.csv';
-SELECT * FROM 'myfile.parquet';
-```
-
-Refer to our [Data Import](https://duckdb.org/docs/stable/data/overview) section for more information.
-
-## SQL Reference
-
-The documentation contains a [SQL introduction and reference](https://duckdb.org/docs/stable/sql/introduction).
-
-## Development
-
-For development, DuckDB requires [CMake](https://cmake.org), Python 3 and a `C++11` compliant compiler. In the root directory, run `make` to compile the sources. For development, use `make debug` to build a non-optimized debug version. You should run `make unit` and `make allunit` to verify that your version works properly after making changes. To test performance, you can run `BUILD_BENCHMARK=1 BUILD_TPCH=1 make` and then perform several standard benchmarks from the root directory by executing `./build/release/benchmark/benchmark_runner`. The details of benchmarks are in our [Benchmark Guide](benchmark/README.md).
-
-Please also refer to our [Build Guide](https://duckdb.org/docs/stable/dev/building/overview) and [Contribution Guide](CONTRIBUTING.md).
-
-## Support
-
-See the [Support Options](https://duckdblabs.com/support/) page and the dedicated [`endoflife.date`](https://endoflife.date/duckdb) page.
