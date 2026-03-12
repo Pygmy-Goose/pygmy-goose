@@ -22,7 +22,7 @@ CONFIGS_DIR = ./test/configs
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJ_DIR := $(dir $(MKFILE_PATH))
 
-PYTHON ?= python3
+PYTHON ?= uv run python3
 SMOKE_UNITTEST ?= build/relassert/test/unittest
 UNITTEST_SLOW_FLAGS ?= --batch-timeout=1800 --track-runtime=300
 UNITTEST_HUGE_FLAGS ?= --batch-size=1 --workers=50% $(UNITTEST_SLOW_FLAGS)
