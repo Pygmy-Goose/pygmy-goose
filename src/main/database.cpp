@@ -37,6 +37,14 @@
 #include "duckdb/main/result_set_manager.hpp"
 #include "duckdb/main/extension_callback_manager.hpp"
 
+#ifndef DUCKDB_EXTENSION_CORE_FUNCTIONS_LINKED
+#define DUCKDB_EXTENSION_CORE_FUNCTIONS_LINKED false
+#endif
+
+#if DUCKDB_EXTENSION_CORE_FUNCTIONS_LINKED
+#include "core_functions_extension.hpp"
+#endif
+
 #ifndef DUCKDB_NO_THREADS
 #include "duckdb/common/thread.hpp"
 #endif
@@ -333,6 +341,9 @@ void DatabaseInstance::Initialize(const char *database_path, DBConfig *user_conf
 
 DuckDB::DuckDB(const char *path, DBConfig *new_config) : instance(make_shared_ptr<DatabaseInstance>()) {
 	instance->Initialize(path, new_config);
+#if DUCKDB_EXTENSION_CORE_FUNCTIONS_LINKED
+	LoadStaticExtension<CoreFunctionsExtension>();
+#endif
 	instance->db_manager->FinalizeStartup();
 }
 

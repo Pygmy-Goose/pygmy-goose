@@ -715,6 +715,9 @@ include_directories(third_party/jaro_winkler)
 include_directories(third_party/vergesort)
 include_directories(third_party/yyjson/include)
 include_directories(third_party/zstd/include)
+if(EXISTS "${PROJECT_SOURCE_DIR}/core_functions/include")
+  include_directories(core_functions/include)
+endif()
 
 # todo only regenerate ub file if one of the input files changed hack alert
 function(enable_unity_build UB_SUFFIX SOURCE_VARIABLE_NAME)
@@ -813,6 +816,10 @@ if(PREBUILT_BINARY)
 
   add_subdirectory(tools)
 elseif (BUILD_MAIN_DUCKDB_LIBRARY)
+  if(EXISTS "${PROJECT_SOURCE_DIR}/core_functions/CMakeLists.txt")
+    add_definitions(-DDUCKDB_EXTENSION_CORE_FUNCTIONS_LINKED=1)
+    add_subdirectory(core_functions)
+  endif()
   add_subdirectory(src)
 
   add_subdirectory(tools)
@@ -903,5 +910,4 @@ if(EXISTS ${CMAKE_CONFIG_TEMPLATE} AND EXISTS ${CMAKE_CONFIG_VERSION_TEMPLATE})
           "${PROJECT_BINARY_DIR}/DuckDBConfigVersion.cmake"
     DESTINATION "${INSTALL_CMAKE_DIR}")
 endif()
-
 
