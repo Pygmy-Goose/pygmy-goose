@@ -43,12 +43,10 @@ jobs:
         env:
           CMAKE_C_COMPILER_LAUNCHER: ccache
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
+          GENERATOR: ninja
         run: |
-          mkdir -p build/release
-          cd build/release
-          cmake -G Ninja ../..
-          ninja
+          make release
 
       - name: Test
         run: |
-          ./test/unittest
+          make unittest_release
