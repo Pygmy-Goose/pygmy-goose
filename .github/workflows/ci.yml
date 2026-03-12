@@ -19,6 +19,15 @@ jobs:
         with:
           submodules: true
 
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ci-${{ runner.os }}-${{ github.ref }}
+          max-size: 2G
+          restore-keys: |
+            ci-${{ runner.os }}-refs/heads/main
+            ci-${{ runner.os }}-
+
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v7
 
@@ -31,6 +40,9 @@ jobs:
         run: make format-check
 
       - name: Build
+        env:
+          CMAKE_C_COMPILER_LAUNCHER: ccache
+          CMAKE_CXX_COMPILER_LAUNCHER: ccache
         run: |
           mkdir -p build/release
           cd build/release
