@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Format Check
+        run: make format-check
+
+      - name: Build
+        run: |
+          mkdir -p build/release
+          cd build/release
+          cmake -G Ninja ../..
+          ninja
+
+      - name: Test
+        run: |
+          cd build/release
+          make unittest
+          ./test/unittest
