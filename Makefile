@@ -22,7 +22,7 @@ CONFIGS_DIR = ./test/configs
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 PROJ_DIR := $(dir $(MKFILE_PATH))
 
-PYTHON ?= python3
+PYTHON ?= uv run python3
 
 ifeq ($(GEN),ninja)
 	GENERATOR=-G "Ninja"
