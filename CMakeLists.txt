@@ -817,9 +817,6 @@ function(add_third_party NAME)
     add_subdirectory(${_DUCKDB_PROJECT_SRC_DIR}/third_party/${NAME} ${_DUCKDB_PROJECT_BIN_DIR}/third_party/${NAME})
 endfunction()
 
-# this depends on disable_target_warnings so the order matters
-include(${PROJECT_SOURCE_DIR}/extension/extension_build_tools.cmake)
-
 if(PREBUILT_BINARY)
   message("Using pre-built static library from file ${PREBUILT_BINARY}")
   add_library(duckdb_static STATIC IMPORTED GLOBAL)
@@ -829,12 +826,10 @@ if(PREBUILT_BINARY)
   set_property(TARGET duckdb_static PROPERTY IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/libduckdb_static.a)
 
   add_subdirectory(tools)
-  add_subdirectory(extension)
 elseif (BUILD_MAIN_DUCKDB_LIBRARY)
   add_subdirectory(src)
 
   add_subdirectory(tools)
-  add_subdirectory(extension)
 endif()
 
 add_third_party(fastpforlib)
