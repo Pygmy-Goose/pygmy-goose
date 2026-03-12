@@ -36,8 +36,6 @@ if(STATIC_LIBCPP)
   target_link_libraries(shell -static-libstdc++ -static-libgcc)
 endif()
 
-link_extension_libraries(shell "")
-
 if(NOT AMALGAMATION_BUILD AND NOT WIN32)
   target_link_libraries(shell duckdb_utf8proc)
 endif()
