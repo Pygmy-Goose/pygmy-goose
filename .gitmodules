@@ -1,3 +1,6 @@
 [submodule "third_party"]
 	path = third_party
 	url = https://github.com/Pygmy-Goose/third-party
+[submodule "data"]
+	path = data
+	url = https://github.com/Pygmy-Goose/data
