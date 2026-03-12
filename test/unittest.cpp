@@ -55,7 +55,6 @@ int main(int argc_in, char *argv[]) {
 	if (test_config.GetSkipCompiledTests()) {
 		Catch::getMutableRegistryHub().clearTests();
 	}
-	RegisterSqllogictests();
 	int result = Catch::Session().run(new_argc, new_argv.get());
 
 	std::string failures_summary = FailureSummary::GetFailureSummary();

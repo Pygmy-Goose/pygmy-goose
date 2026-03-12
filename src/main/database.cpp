@@ -333,9 +333,6 @@ void DatabaseInstance::Initialize(const char *database_path, DBConfig *user_conf
 
 DuckDB::DuckDB(const char *path, DBConfig *new_config) : instance(make_shared_ptr<DatabaseInstance>()) {
 	instance->Initialize(path, new_config);
-	if (instance->config.options.load_extensions) {
-		ExtensionHelper::LoadAllExtensions(*this);
-	}
 	instance->db_manager->FinalizeStartup();
 }
 
