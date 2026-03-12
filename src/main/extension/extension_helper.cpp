@@ -9,6 +9,7 @@
 #include "duckdb/main/client_context.hpp"
 #include "duckdb/main/database.hpp"
 #include "duckdb/main/extension.hpp"
+#include "duckdb/main/extension/extension_loader.hpp"
 #include "duckdb/main/extension_install_info.hpp"
 #include "duckdb/main/settings.hpp"
 
@@ -95,6 +96,28 @@
 #endif
 
 namespace duckdb {
+
+ExtensionLoadResult ExtensionHelper::LoadExtension(DuckDB &db, const std::string &extension) {
+	auto extension_name = ExtensionHelper::GetExtensionName(extension);
+	if (db.instance->ExtensionIsLoaded(extension_name)) {
+		return ExtensionLoadResult::LOADED_EXTENSION;
+	}
+
+#if DUCKDB_EXTENSION_CORE_FUNCTIONS_LINKED
+	if (extension_name == "core_functions") {
+		db.LoadStaticExtension<CoreFunctionsExtension>();
+		return ExtensionLoadResult::LOADED_EXTENSION;
+	}
+#endif
+
+	try {
+		auto &fs = FileSystem::GetFileSystem(*db.instance);
+		ExtensionHelper::LoadExternalExtension(*db.instance, fs, extension_name);
+		return ExtensionLoadResult::LOADED_EXTENSION;
+	} catch (...) {
+		return ExtensionLoadResult::NOT_LOADED;
+	}
+}
 
 //===--------------------------------------------------------------------===//
 // Default Extensions
