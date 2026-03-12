@@ -106,7 +106,6 @@ link_threads(duckdb_static PUBLIC)
 
 add_library(duckdb SHARED ${ALL_OBJECT_FILES} ${LINK_OBJECTS})
 target_link_libraries(duckdb PUBLIC ${DUCKDB_SYSTEM_LIBS})
-link_extension_libraries(duckdb PRIVATE)
 
 link_threads(duckdb PUBLIC)
 
