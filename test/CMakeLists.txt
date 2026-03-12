@@ -26,9 +26,7 @@ if(${ENABLE_UNITTEST_CPP_TESTS})
   add_subdirectory(mbedtls)
   add_subdirectory(encryption)
 endif()
-add_subdirectory(extension)
 add_subdirectory(helpers)
-add_subdirectory(sqlite)
 
 if(NOT WIN32 AND NOT SUN)
   if(${ENABLE_UNITTEST_CPP_TESTS})
@@ -54,5 +52,3 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 target_link_libraries(unittest duckdb_static test_helpers)
-
-link_extension_libraries(unittest "")

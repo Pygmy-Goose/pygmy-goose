@@ -24,9 +24,7 @@ class MemberVariableStatus(Enum):
 
 def get_file_list():
     if args.source is None:
-        targets = [
-            {'source': 'src/include/duckdb/storage/serialization', 'target': 'src/storage/serialization'}
-        ]
+        targets = [{'source': 'src/include/duckdb/storage/serialization', 'target': 'src/storage/serialization'}]
     else:
         targets = [
             {'source': args.source, 'target': args.target},
