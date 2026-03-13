@@ -1,21 +1,13 @@
-#!/usr/bin/python
-
-# this script is used to format the source directory
+#!/usr/bin/env python3
 
 import os
-import time
-import sys
-import inspect
 import subprocess
+import sys
+import argparse
+import concurrent.futures
 import difflib
 import re
-import tempfile
-import uuid
-import concurrent.futures
-import argparse
-import shutil
 import traceback
-from python_helpers import open_utf8
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from format_test_benchmark import format_file_content
@@ -40,159 +32,179 @@ except Exception as e:
     print("you need to run `uv pip install clang_format==20.1.7 - `", e)
     exit(-1)
 
-cpp_format_command = 'clang-format --sort-includes=0 -style=file'
-cmake_format_command = 'cmake-format'
-
 try:
-    subprocess.check_output(('cmake-format', '--version'), text=True)
+    subprocess.check_output(("cmake-format", "--version"), text=True)
 except Exception as e:
-    print('you need to run `uv pip install cmake-format`', e)
+    print("you need to run `uv pip install cmake-format`", e)
     exit(-1)
 
-extensions = [
-    '.cpp',
-    '.ipp',
-    '.c',
-    '.hpp',
-    '.h',
-    '.cc',
-    '.hh',
-    'CMakeLists.txt',
-    '.test',
-    '.test_slow',
-    '.test_coverage',
-    '.benchmark',
-    '.py',
-    '.java',
+EXTENSIONS = [
+    ".cpp",
+    ".ipp",
+    ".c",
+    ".hpp",
+    ".h",
+    ".cc",
+    ".hh",
+    "CMakeLists.txt",
+    ".test",
+    ".test_slow",
+    ".test_coverage",
+    ".benchmark",
+    ".py",
+    ".java",
 ]
-formatted_directories = ['src', 'test', 'tools', 'scripts']
-ignored_files = [
-    'tpch_constants.hpp',
-    'tpcds_constants.hpp',
-    '_generated',
-    'test_csv_header.hpp',
-    'duckdb.cpp',
-    'duckdb.hpp',
-    'json.hpp',
-    'sqlite3.h',
-    'shell.c',
-    'termcolor.hpp',
-    'test_insert_invalid.test',
-    'httplib.hpp',
-    'os_win.c',
-    'glob.c',
-    'printf.c',
-    'helper.hpp',
-    'single_thread_ptr.hpp',
-    'types.hpp',
-    'default_views.cpp',
-    'default_functions.cpp',
-    'release.h',
-    'genrand.cpp',
-    'address.cpp',
-    'visualizer_constants.hpp',
-    'icu-collate.cpp',
-    'icu-collate.hpp',
-    'yyjson.cpp',
-    'yyjson.hpp',
-    'duckdb_pdqsort.hpp',
-    'pdqsort.h',
-    'stubdata.cpp',
-    'nf_calendar.cpp',
-    'nf_calendar.h',
-    'nf_localedata.cpp',
-    'nf_localedata.h',
-    'nf_zformat.cpp',
-    'nf_zformat.h',
-    'expr.cc',
-    'function_list.cpp',
-    'inlined_grammar.hpp',
+FORMATTED_DIRECTORIES = ["src", "test", "tools", "scripts"]
+IGNORED_FILES = [
+    "tpch_constants.hpp",
+    "tpcds_constants.hpp",
+    "_generated",
+    "test_csv_header.hpp",
+    "duckdb.cpp",
+    "duckdb.hpp",
+    "json.hpp",
+    "sqlite3.h",
+    "shell.c",
+    "termcolor.hpp",
+    "test_insert_invalid.test",
+    "httplib.hpp",
+    "os_win.c",
+    "glob.c",
+    "printf.c",
+    "helper.hpp",
+    "single_thread_ptr.hpp",
+    "types.hpp",
+    "default_views.cpp",
+    "default_functions.cpp",
+    "release.h",
+    "genrand.cpp",
+    "address.cpp",
+    "visualizer_constants.hpp",
+    "icu-collate.cpp",
+    "icu-collate.hpp",
+    "yyjson.cpp",
+    "yyjson.hpp",
+    "duckdb_pdqsort.hpp",
+    "pdqsort.h",
+    "stubdata.cpp",
+    "nf_calendar.cpp",
+    "nf_calendar.h",
+    "nf_localedata.cpp",
+    "nf_localedata.h",
+    "nf_zformat.cpp",
+    "nf_zformat.h",
+    "expr.cc",
+    "function_list.cpp",
+    "inlined_grammar.hpp",
 ]
-ignored_directories = [
-    '.eggs',
-    '__pycache__',
-    'dbgen',
-    os.path.join('tools', 'rpkg', 'src', 'duckdb'),
-    os.path.join('tools', 'rpkg', 'inst', 'include', 'cpp11'),
-    os.path.join('extension', 'tpcds', 'dsdgen'),
-    os.path.join('extension', 'jemalloc', 'jemalloc'),
-    os.path.join('extension', 'icu', 'third_party'),
-    os.path.join('tools', 'nodejs', 'src', 'duckdb'),
+IGNORED_DIRECTORIES = [
+    ".eggs",
+    "__pycache__",
+    "dbgen",
+    os.path.join("tools", "rpkg", "src", "duckdb"),
+    os.path.join("tools", "rpkg", "inst", "include", "cpp11"),
+    os.path.join("extension", "tpcds", "dsdgen"),
+    os.path.join("extension", "jemalloc", "jemalloc"),
+    os.path.join("extension", "icu", "third_party"),
+    os.path.join("tools", "nodejs", "src", "duckdb"),
 ]
-format_all = False
-check_only = True
-confirm = True
-silent = False
-force = False
+IGNORED_EXTENSIONS = []
 
+CLANG_FORMAT = ["clang-format", "--sort-includes=0", "-style=file"]
+BLACK_FORMAT = ["black", "-q", "--skip-string-normalization", "--line-length", "120"]
+CMAKE_FORMAT = ["cmake-format"]
+TEST_FORMAT = ["./scripts/format_test_benchmark.py"]
 
-parser = argparse.ArgumentParser(prog='python scripts/format.py', description='Format source directory files')
-parser.add_argument(
-    'revision', nargs='?', default='HEAD', help='Revision number or --all to format all files (default: HEAD)'
+FORMAT_COMMANDS = {
+    ".cpp": CLANG_FORMAT,
+    ".ipp": CLANG_FORMAT,
+    ".c": CLANG_FORMAT,
+    ".hpp": CLANG_FORMAT,
+    ".h": CLANG_FORMAT,
+    ".hh": CLANG_FORMAT,
+    ".cc": CLANG_FORMAT,
+    ".txt": CMAKE_FORMAT,
+    ".py": BLACK_FORMAT,
+    ".java": CLANG_FORMAT,
+    ".test": TEST_FORMAT,
+    ".test_slow": TEST_FORMAT,
+    ".test_coverage": TEST_FORMAT,
+    ".benchmark": TEST_FORMAT,
+}
+
+header_top = (
+    "//===----------------------------------------------------------------------===//\n"
 )
-parser.add_argument('--check', action='store_true', help='Only print differences (default)')
-parser.add_argument('--fix', action='store_true', help='Fix the files')
-parser.add_argument('-a', '--all', action='store_true', help='Format all files')
-parser.add_argument('-d', '--directories', nargs='*', default=[], help='Format specified directories')
-parser.add_argument('-y', '--noconfirm', action='store_true', help='Skip confirmation prompt')
-parser.add_argument('-q', '--silent', action='store_true', help='Suppress output')
-parser.add_argument('-f', '--force', action='store_true', help='Force formatting')
-args = parser.parse_args()
+header_top += "//                         DuckDB\n" + "//\n"
+header_bottom = "//\n" + "//\n"
+header_bottom += "//===----------------------------------------------------------------------===//\n\n"
+base_dir = os.path.join(os.getcwd(), "src/include")
 
-revision = args.revision
-if args.check and args.fix:
-    parser.print_usage()
-    exit(1)
-check_only = not args.fix
-confirm = not args.noconfirm
-silent = args.silent
-force = args.force
-format_all = args.all
-if args.directories:
-    formatted_directories = args.directories
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        prog="python scripts/format.py", description="Format source directory files"
+    )
+    parser.add_argument(
+        "revision",
+        nargs="?",
+        default="HEAD",
+        help="Revision number or --all to format all files (default: HEAD)",
+    )
+    parser.add_argument(
+        "--check", action="store_true", help="Only print differences (default)"
+    )
+    parser.add_argument("--fix", action="store_true", help="Fix the files")
+    parser.add_argument("-a", "--all", action="store_true", help="Format all files")
+    parser.add_argument(
+        "-d",
+        "--directories",
+        nargs="*",
+        default=[],
+        help="Format specified directories",
+    )
+    parser.add_argument(
+        "-y", "--noconfirm", action="store_true", help="Skip confirmation prompt"
+    )
+    parser.add_argument("-q", "--silent", action="store_true", help="Suppress output")
+    parser.add_argument("-f", "--force", action="store_true", help="Force formatting")
+    return parser.parse_args()
 
 
 def file_is_ignored(full_path):
-    if os.path.basename(full_path) in ignored_files:
+    if os.path.basename(full_path) in IGNORED_FILES:
         return True
     dirnames = os.path.sep.join(full_path.split(os.path.sep)[:-1])
-    for ignored_directory in ignored_directories:
+    for ignored_directory in IGNORED_DIRECTORIES:
         if ignored_directory in dirnames:
             return True
     return False
 
 
 def can_format_file(full_path):
-    global extensions, formatted_directories, ignored_files
     if not os.path.isfile(full_path):
         return False
-    fname = full_path.split(os.path.sep)[-1]
+    full_path.split(os.path.sep)[-1]
     found = False
-    # check file extension
-    for ext in extensions:
+    for ext in EXTENSIONS:
         if full_path.endswith(ext):
             found = True
             break
     if not found:
         return False
-    # check ignored files
     if file_is_ignored(full_path):
         return False
-    # now check file directory
-    for dname in formatted_directories:
+    for dname in FORMATTED_DIRECTORIES:
         if full_path.startswith(dname):
             return True
     return False
 
 
-action = "Formatting"
-if check_only:
-    action = "Checking"
-
-
 def get_changed_files(revision):
-    proc = subprocess.Popen(['git', 'diff', '--name-only', revision], stdout=subprocess.PIPE)
-    files = proc.stdout.read().decode('utf8').split('\n')
+    proc = subprocess.Popen(
+        ["git", "diff", "--name-only", revision], stdout=subprocess.PIPE
+    )
+    files = proc.stdout.read().decode("utf8").split("\n")
     changed_files = []
     for f in files:
         if not can_format_file(f):
@@ -203,177 +215,6 @@ def get_changed_files(revision):
     return changed_files
 
 
-if os.path.isfile(revision):
-    print(action + " individual file: " + revision)
-    changed_files = [revision]
-elif os.path.isdir(revision):
-    print(action + " files in directory: " + revision)
-    changed_files = [os.path.join(revision, x) for x in os.listdir(revision)]
-
-    print("Changeset:")
-    for fname in changed_files:
-        print(fname)
-elif not format_all:
-    if revision == 'main':
-        # fetch new changes when comparing to the master
-        os.system("git fetch origin main:main")
-    print(action + " since branch or revision: " + revision)
-    changed_files = get_changed_files(revision)
-    if len(changed_files) == 0:
-        print("No changed files found!")
-        exit(0)
-
-    print("Changeset:")
-    for fname in changed_files:
-        print(fname)
-else:
-    print(action + " all files")
-
-if confirm and not check_only:
-    print("The files listed above will be reformatted.")
-    result = input("Continue with changes (y/n)?\n")
-    if result != 'y':
-        print("Aborting.")
-        exit(0)
-
-format_commands = {
-    '.cpp': cpp_format_command,
-    '.ipp': cpp_format_command,
-    '.c': cpp_format_command,
-    '.hpp': cpp_format_command,
-    '.h': cpp_format_command,
-    '.hh': cpp_format_command,
-    '.cc': cpp_format_command,
-    '.txt': cmake_format_command,
-    '.py': 'black --quiet - --skip-string-normalization --line-length 120 --stdin-filename',
-    '.java': cpp_format_command,
-}
-
-difference_files = []
-
-header_top = "//===----------------------------------------------------------------------===//\n"
-header_top += "//                         DuckDB\n" + "//\n"
-header_bottom = "//\n" + "//\n"
-header_bottom += "//===----------------------------------------------------------------------===//\n\n"
-base_dir = os.path.join(os.getcwd(), 'src/include')
-
-
-def get_formatted_text(f, full_path, directory, ext):
-    if not can_format_file(full_path):
-        if not force:
-            print(
-                "File "
-                + full_path
-                + " is not normally formatted - but attempted to format anyway. Use --force if formatting is desirable"
-            )
-            exit(1)
-    if f == 'list.hpp':
-        # fill in list file
-        file_list = [
-            os.path.join(dp, f)
-            for dp, dn, filenames in os.walk(directory)
-            for f in filenames
-            if os.path.splitext(f)[1] == '.hpp' and not f.endswith("list.hpp")
-        ]
-        file_list = [x.replace('src/include/', '') for x in file_list]
-        file_list.sort()
-        result = ""
-        for x in file_list:
-            result += '#include "%s"\n' % (x)
-        return result
-
-    if ext == ".hpp" and directory.startswith("src/include"):
-        with open_utf8(full_path, 'r') as f:
-            lines = f.readlines()
-
-        # format header in files
-        header_middle = "// " + os.path.relpath(full_path, base_dir) + "\n"
-        text = header_top + header_middle + header_bottom
-        is_old_header = True
-        for line in lines:
-            if not (line.startswith("//") or line.startswith("\n")) and is_old_header:
-                is_old_header = False
-            if not is_old_header:
-                text += line
-
-    if ext == '.test' or ext == '.test_slow' or ext == '.test_coverage' or ext == '.benchmark':
-        # optimization: import and call the function directly
-        # instead of running a subprocess
-        with open(full_path, "r", encoding="utf-8") as f:
-            original_lines = f.readlines()
-        formatted, status = format_file_content(full_path, original_lines)
-        if formatted is None:
-            print(f"Failed to format {full_path}: {status}")
-            sys.exit(1)
-        return formatted
-    proc_command = format_commands[ext].split(' ') + [full_path]
-    proc = subprocess.Popen(
-        proc_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=open(full_path) if ext == '.py' else None
-    )
-    new_text = proc.stdout.read().decode('utf8')
-    stderr = proc.stderr.read().decode('utf8')
-    if len(stderr) > 0:
-        print(os.getcwd())
-        print("Failed to format file " + full_path)
-        print(' '.join(proc_command))
-        print(stderr)
-        exit(1)
-    new_text = new_text.replace('\r', '')
-    new_text = re.sub(r'\n*$', '', new_text)
-    return new_text + '\n'
-
-
-def file_is_generated(text):
-    if '// This file is automatically generated by scripts/' in text:
-        return True
-    return False
-
-
-def format_file(f, full_path, directory, ext):
-    global difference_files
-    with open_utf8(full_path, 'r') as f:
-        old_text = f.read()
-    # do not format auto-generated files
-    if file_is_generated(old_text) and ext != '.py':
-        return
-    old_lines = old_text.split('\n')
-
-    new_text = get_formatted_text(f, full_path, directory, ext)
-    if ext in ('.cpp', '.hpp'):
-        new_text = new_text.replace('ARGS &&...args', 'ARGS &&... args')
-    if check_only:
-        new_lines = new_text.split('\n')
-        old_lines = [x for x in old_lines if '...' not in x]
-        new_lines = [x for x in new_lines if '...' not in x]
-        diff_result = difflib.unified_diff(old_lines, new_lines)
-        total_diff = ""
-        for diff_line in diff_result:
-            total_diff += diff_line + "\n"
-        total_diff = total_diff.strip()
-
-        if len(total_diff) > 0:
-            print("----------------------------------------")
-            print("----------------------------------------")
-            print("Found differences in file " + full_path)
-            print("----------------------------------------")
-            print("----------------------------------------")
-            print(total_diff)
-            difference_files.append(full_path)
-    else:
-        tmpfile = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()))
-        with open_utf8(tmpfile, 'w+', newline='\n') as f:
-            f.write(new_text)
-        shutil.move(tmpfile, full_path)
-
-
-class ToFormatFile:
-    def __init__(self, filename, full_path, directory):
-        self.filename = filename
-        self.full_path = full_path
-        self.directory = directory
-        self.ext = '.' + filename.split('.')[-1]
-
-
 def format_directory(directory):
     files = os.listdir(directory)
     files.sort()
@@ -381,62 +222,290 @@ def format_directory(directory):
     for f in files:
         full_path = os.path.join(directory, f)
         if os.path.isdir(full_path):
-            if f in ignored_directories or full_path in ignored_directories:
+            if f in IGNORED_DIRECTORIES or full_path in IGNORED_DIRECTORIES:
                 continue
             result += format_directory(full_path)
         elif can_format_file(full_path):
-            result += [ToFormatFile(f, full_path, directory)]
+            result += [full_path]
     return result
 
 
-files = []
-if format_all:
-    try:
-        os.system(cmake_format_command.replace("${FILE}", "CMakeLists.txt"))
-    except:
-        pass
-
-    for direct in formatted_directories:
-        files += format_directory(direct)
-
-else:
-    for full_path in changed_files:
-        splits = full_path.split(os.path.sep)
-        fname = splits[-1]
-        dirname = os.path.sep.join(splits[:-1])
-        files.append(ToFormatFile(fname, full_path, dirname))
+def file_is_generated(text):
+    if "// This file is automatically generated by scripts/" in text:
+        return True
+    return False
 
 
-def process_file(f):
+def format_file(full_path, check_only, force, silent):
+    ext = "." + full_path.split(".")[-1] if "." in full_path.split("/")[-1] else ""
+    if ext in IGNORED_EXTENSIONS:
+        return
+    if ext not in FORMAT_COMMANDS:
+        return
     if not silent:
-        print(f.full_path)
-    try:
-        format_file(f.filename, f.full_path, f.directory, f.ext)
-    except:
-        print(traceback.format_exc())
-        sys.exit(1)
+        print(full_path)
 
+    with open(full_path, "r", encoding="utf-8") as f:
+        original = f.read()
 
-# Create thread for each file
-with concurrent.futures.ThreadPoolExecutor() as executor:
-    try:
-        threads = [executor.submit(process_file, f) for f in files]
-        # Wait for all tasks to complete
-        concurrent.futures.wait(threads)
-    except KeyboardInterrupt:
-        executor.shutdown(wait=True, cancel_futures=True)
-        raise
+    if file_is_generated(original) and ext != ".py":
+        return
 
-if check_only:
-    if len(difference_files) > 0:
-        print("")
-        print("")
-        print("")
-        print("Failed format-check: differences were found in the following files:")
-        for fname in difference_files:
-            print("- " + fname)
-        print('Run "make format-fix" to fix these differences automatically')
-        exit(1)
+    if check_only:
+        cmd = None
+        if ext in (".test", ".test_slow", ".test_coverage", ".benchmark"):
+            with open(full_path, "r", encoding="utf-8") as f:
+                original_lines = f.readlines()
+            formatted, status = format_file_content(full_path, original_lines)
+            if formatted is None:
+                print(f"Failed to format {full_path}: {status}")
+                sys.exit(1)
+            stderr = ""
+        elif ext == ".py":
+            cmd = FORMAT_COMMANDS[ext] + ["-", "--stdin-filename", full_path]
+            process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            formatted, stderr = process.communicate(input=original)
+            formatted = formatted or ""
+        else:
+            cmd = FORMAT_COMMANDS[ext] + [full_path]
+            process = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+            formatted, stderr = process.communicate()
+            formatted = formatted or ""
+        if cmd and stderr:
+            print(os.getcwd())
+            print("Failed to format file " + full_path)
+            print(" ".join(cmd))
+            print(stderr)
+            sys.exit(1)
+            stderr = ""
+        elif ext == ".py":
+            cmd = FORMAT_COMMANDS[ext] + ["-", "--stdin-filename", full_path]
+            process = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+            formatted, stderr = process.communicate(input=original)
+        else:
+            cmd = FORMAT_COMMANDS[ext] + [full_path]
+            process = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+            formatted, stderr = process.communicate()
+        if stderr:
+            print(os.getcwd())
+            print("Failed to format file " + full_path)
+            print(" ".join(cmd))
+            print(stderr)
+            sys.exit(1)
+        formatted = formatted.replace("\r", "")
+        formatted = re.sub(r"\n*$", "", formatted)
+        formatted += "\n"
+
+        if ext == ".hpp" and full_path.startswith("src/include"):
+            with open(full_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+
+            header_middle = "// " + os.path.relpath(full_path, base_dir) + "\n"
+            text = header_top + header_middle + header_bottom
+            is_old_header = True
+            for line in lines:
+                if (
+                    not (line.startswith("//") or line.startswith("\n"))
+                    and is_old_header
+                ):
+                    is_old_header = False
+                if not is_old_header:
+                    text += line
+            formatted = text
+
+        if full_path.endswith("list.hpp"):
+            file_list = [
+                os.path.join(dp, f)
+                for dp, dn, filenames in os.walk("src/include")
+                for f in filenames
+                if os.path.splitext(f)[1] == ".hpp" and not f.endswith("list.hpp")
+            ]
+            file_list = [x.replace("src/include/", "") for x in file_list]
+            file_list.sort()
+            result = ""
+            for x in file_list:
+                result += '#include "%s"\n' % (x)
+            formatted = result
+
+        if ext in (".cpp", ".hpp"):
+            formatted = formatted.replace("ARGS &&...args", "ARGS &&... args")
+
+        if original != formatted:
+            print("----------------------------------------")
+            print("----------------------------------------")
+            print("Found differences in file " + full_path)
+            print("----------------------------------------")
+            print("----------------------------------------")
+            diff_result = difflib.unified_diff(
+                original.split("\n"), formatted.split("\n")
+            )
+            total_diff = ""
+            for diff_line in diff_result:
+                total_diff += diff_line + "\n"
+            total_diff = total_diff.strip()
+            print(total_diff)
+            return full_path
     else:
-        print("Passed format-check")
-        exit(0)
+        if ext in (".test", ".test_slow", ".test_coverage", ".benchmark"):
+            with open(full_path, "r", encoding="utf-8") as f:
+                original_lines = f.readlines()
+            formatted, status = format_file_content(full_path, original_lines)
+            if formatted is None:
+                print(f"Failed to format {full_path}: {status}")
+                sys.exit(1)
+            with open(full_path, "w", encoding="utf-8") as f:
+                f.write(formatted)
+        else:
+            cmd = FORMAT_COMMANDS[ext] + ["-i", full_path]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.stderr:
+                print(os.getcwd())
+                print("Failed to format file " + full_path)
+                print(" ".join(cmd))
+                print(result.stderr)
+                sys.exit(1)
+
+        if ext == ".hpp" and full_path.startswith("src/include"):
+            with open(full_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+
+            header_middle = "// " + os.path.relpath(full_path, base_dir) + "\n"
+            text = header_top + header_middle + header_bottom
+            is_old_header = True
+            for line in lines:
+                if (
+                    not (line.startswith("//") or line.startswith("\n"))
+                    and is_old_header
+                ):
+                    is_old_header = False
+                if not is_old_header:
+                    text += line
+
+            with open(full_path, "w", encoding="utf-8") as f:
+                f.write(text)
+
+        if full_path.endswith("list.hpp"):
+            file_list = [
+                os.path.join(dp, f)
+                for dp, dn, filenames in os.walk("src/include")
+                for f in filenames
+                if os.path.splitext(f)[1] == ".hpp" and not f.endswith("list.hpp")
+            ]
+            file_list = [x.replace("src/include/", "") for x in file_list]
+            file_list.sort()
+            result = ""
+            for x in file_list:
+                result += '#include "%s"\n' % (x)
+            with open(full_path, "w", encoding="utf-8") as f:
+                f.write(result)
+
+        if ext in (".cpp", ".hpp"):
+            with open(full_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            content = content.replace("ARGS &&...args", "ARGS &&... args")
+            with open(full_path, "w", encoding="utf-8") as f:
+                f.write(content)
+
+
+def main():
+    args = parse_args()
+
+    revision = args.revision
+    check_only = not args.fix
+    confirm = not args.noconfirm
+    silent = args.silent
+    force = args.force
+    format_all = args.all
+    formatted_dirs = FORMATTED_DIRECTORIES
+    if args.directories:
+        formatted_dirs = args.directories
+
+    action = "Formatting"
+    if check_only:
+        action = "Checking"
+
+    files = []
+    if os.path.isfile(revision):
+        print(action + " individual file: " + revision)
+        files = [revision]
+    elif os.path.isdir(revision):
+        print(action + " files in directory: " + revision)
+        files = [os.path.join(revision, x) for x in os.listdir(revision)]
+        print("Changeset:")
+        for fname in files:
+            print(fname)
+    elif not format_all:
+        if revision == "main":
+            os.system("git fetch origin main:main")
+        print(action + " since branch or revision: " + revision)
+        files = get_changed_files(revision)
+        if len(files) == 0:
+            print("No changed files found!")
+            exit(0)
+        print("Changeset:")
+        for fname in files:
+            print(fname)
+    else:
+        print(action + " all files")
+        for direct in formatted_dirs:
+            files += format_directory(direct)
+
+    if confirm and not check_only:
+        print("The files listed above will be reformatted.")
+        result = input("Continue with changes (y/n)?\n")
+        if result != "y":
+            print("Aborting.")
+            exit(0)
+
+    difference_files = []
+
+    def process_file(f):
+        try:
+            result = format_file(f, check_only, force, silent)
+            if result:
+                difference_files.append(result)
+        except Exception:
+            print(traceback.format_exc())
+            sys.exit(1)
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        try:
+            threads = [executor.submit(process_file, f) for f in files]
+            concurrent.futures.wait(threads)
+        except KeyboardInterrupt:
+            executor.shutdown(wait=True, cancel_futures=True)
+            raise
+
+    if check_only:
+        if len(difference_files) > 0:
+            print("")
+            print("")
+            print("")
+            print("Failed format-check: differences were found in the following files:")
+            for fname in difference_files:
+                print("- " + fname)
+            print('Run "make format-fix" to fix these differences automatically')
+            exit(1)
+        else:
+            print("Passed format-check")
+            exit(0)
+
+
+if __name__ == "__main__":
+    main()
