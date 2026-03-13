@@ -23,21 +23,21 @@ from format_test_benchmark import format_file_content
 try:
     ver = subprocess.check_output(("black", "--version"), text=True)
     if int(ver.split(" ")[1].split(".")[0]) < 26:
-        print('you need to run `pip install "black>=26"`', ver)
+        print('you need to run `uv pip install "black>=26"`', ver)
         if "DUCKDB_FORMAT_SKIP_VERSION_CHECKS" not in os.environ:
             exit(-1)
 except Exception as e:
-    print('you need to run `pip install "black>=26"`', e)
+    print('you need to run `uv pip install "black>=26"`', e)
     exit(-1)
 
 try:
     ver = subprocess.check_output(("clang-format", "--version"), text=True)
     if "20." not in ver:
-        print("you need to run `pip install clang_format==20.1.7 - `", ver)
+        print("you need to run `uv pip install clang_format==20.1.7 - `", ver)
         if "DUCKDB_FORMAT_SKIP_VERSION_CHECKS" not in os.environ:
             exit(-1)
 except Exception as e:
-    print("you need to run `pip install clang_format==20.1.7 - `", e)
+    print("you need to run `uv pip install clang_format==20.1.7 - `", e)
     exit(-1)
 
 cpp_format_command = 'clang-format --sort-includes=0 -style=file'
@@ -46,7 +46,7 @@ cmake_format_command = 'cmake-format'
 try:
     subprocess.check_output(('cmake-format', '--version'), text=True)
 except Exception as e:
-    print('you need to run `pip install cmake-format`', e)
+    print('you need to run `uv pip install cmake-format`', e)
     exit(-1)
 
 extensions = [
