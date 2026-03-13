@@ -51,7 +51,7 @@ jobs:
       - name: Setup
         run: |
           uv venv
-          uv pip install black==24.10.0 clang_format==11.0.1 cmake-format
+          uv pip install black==26.1.0 clang_format==20.1.7 cmake-format
 
       - name: Format Check
         run: make format-check
