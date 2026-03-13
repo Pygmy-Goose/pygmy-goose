@@ -143,9 +143,9 @@ def parse_args():
     parser = argparse.ArgumentParser(prog="python scripts/format.py", description="Format source directory files")
     parser.add_argument(
         "revision",
-        nargs="?",
-        default="HEAD",
-        help="Revision number or --all to format all files (default: HEAD)",
+        nargs="*",
+        default=["HEAD"],
+        help="Revision number, path to a file/directory, or list of files to format (default: HEAD)",
     )
     parser.add_argument("--check", action="store_true", help="Only print differences (default)")
     parser.add_argument("--fix", action="store_true", help="Fix the files")
@@ -407,7 +407,6 @@ def format_file(full_path, check_only, force, silent):
 def main():
     args = parse_args()
 
-    revision = args.revision
     check_only = not args.fix
     confirm = not args.noconfirm
     silent = args.silent
@@ -422,30 +421,37 @@ def main():
         action = "Checking"
 
     files = []
-    if os.path.isfile(revision):
-        print(action + " individual file: " + revision)
-        files = [revision]
-    elif os.path.isdir(revision):
-        print(action + " files in directory: " + revision)
-        files = [os.path.join(revision, x) for x in os.listdir(revision)]
-        print("Changeset:")
-        for fname in files:
-            print(fname)
-    elif not format_all:
-        if revision == "main":
-            os.system("git fetch origin main:main")
-        print(action + " since branch or revision: " + revision)
-        files = get_changed_files(revision)
-        if len(files) == 0:
-            print("No changed files found!")
-            exit(0)
-        print("Changeset:")
-        for fname in files:
-            print(fname)
+    revision_list = args.revision
+    # When multiple positional args are given (e.g. from pre-commit), treat them all as files
+    if len(revision_list) > 1:
+        print(action + " files: " + " ".join(revision_list))
+        files = [f for f in revision_list if can_format_file(f)]
     else:
-        print(action + " all files")
-        for direct in formatted_dirs:
-            files += format_directory(direct)
+        revision = revision_list[0] if revision_list else "HEAD"
+        if os.path.isfile(revision):
+            print(action + " individual file: " + revision)
+            files = [revision]
+        elif os.path.isdir(revision):
+            print(action + " files in directory: " + revision)
+            files = [os.path.join(revision, x) for x in os.listdir(revision)]
+            print("Changeset:")
+            for fname in files:
+                print(fname)
+        elif not format_all:
+            if revision == "main":
+                os.system("git fetch origin main:main")
+            print(action + " since branch or revision: " + revision)
+            files = get_changed_files(revision)
+            if len(files) == 0:
+                print("No changed files found!")
+                exit(0)
+            print("Changeset:")
+            for fname in files:
+                print(fname)
+        else:
+            print(action + " all files")
+            for direct in formatted_dirs:
+                files += format_directory(direct)
 
     if confirm and not check_only:
         print("The files listed above will be reformatted.")
