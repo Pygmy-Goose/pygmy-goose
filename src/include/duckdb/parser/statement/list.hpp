@@ -1,3 +1,11 @@
+//===----------------------------------------------------------------------===//
+//                         DuckDB
+//
+// duckdb/parser/statement/list.hpp
+//
+//
+//===----------------------------------------------------------------------===//
+
 #include "duckdb/parser/statement/alter_statement.hpp"
 #include "duckdb/parser/statement/attach_statement.hpp"
 #include "duckdb/parser/statement/call_statement.hpp"

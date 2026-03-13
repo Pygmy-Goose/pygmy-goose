@@ -77,14 +77,16 @@ void AggregateStateTypeInfo::Serialize(Serializer &serializer) const {
 	ExtraTypeInfo::Serialize(serializer);
 	serializer.WritePropertyWithDefault<string>(200, "function_name", state_type.function_name);
 	serializer.WriteProperty<LogicalType>(201, "return_type", state_type.return_type);
-	serializer.WritePropertyWithDefault<vector<LogicalType>>(202, "bound_argument_types", state_type.bound_argument_types);
+	serializer.WritePropertyWithDefault<vector<LogicalType>>(202, "bound_argument_types",
+	                                                         state_type.bound_argument_types);
 }
 
 shared_ptr<ExtraTypeInfo> AggregateStateTypeInfo::Deserialize(Deserializer &deserializer) {
 	auto result = duckdb::shared_ptr<AggregateStateTypeInfo>(new AggregateStateTypeInfo());
 	deserializer.ReadPropertyWithDefault<string>(200, "function_name", result->state_type.function_name);
 	deserializer.ReadProperty<LogicalType>(201, "return_type", result->state_type.return_type);
-	deserializer.ReadPropertyWithDefault<vector<LogicalType>>(202, "bound_argument_types", result->state_type.bound_argument_types);
+	deserializer.ReadPropertyWithDefault<vector<LogicalType>>(202, "bound_argument_types",
+	                                                          result->state_type.bound_argument_types);
 	return std::move(result);
 }
 
@@ -129,13 +131,15 @@ shared_ptr<ExtraTypeInfo> DecimalTypeInfo::Deserialize(Deserializer &deserialize
 
 void ExtensionTypeInfo::Serialize(Serializer &serializer) const {
 	serializer.WritePropertyWithDefault<vector<LogicalTypeModifier>>(100, "modifiers", modifiers);
-	serializer.WritePropertyWithDefault<unordered_map<string, Value>>(101, "properties", properties, unordered_map<string, Value>());
+	serializer.WritePropertyWithDefault<unordered_map<string, Value>>(101, "properties", properties,
+	                                                                  unordered_map<string, Value>());
 }
 
 unique_ptr<ExtensionTypeInfo> ExtensionTypeInfo::Deserialize(Deserializer &deserializer) {
 	auto result = duckdb::unique_ptr<ExtensionTypeInfo>(new ExtensionTypeInfo());
 	deserializer.ReadPropertyWithDefault<vector<LogicalTypeModifier>>(100, "modifiers", result->modifiers);
-	deserializer.ReadPropertyWithExplicitDefault<unordered_map<string, Value>>(101, "properties", result->properties, unordered_map<string, Value>());
+	deserializer.ReadPropertyWithExplicitDefault<unordered_map<string, Value>>(101, "properties", result->properties,
+	                                                                           unordered_map<string, Value>());
 	return result;
 }
 

@@ -3,13 +3,6 @@
 //
 // duckdb/planner/operator/logical_dependent_join.hpp
 //
-// logical_dependent_join represents a logical operator for lateral joins that
-// is planned but not yet flattened
-//
-// This construct only exists during planning and should not exist in the plan
-// once flattening is complete. Although the same information can be kept in the
-// join itself, creating a new construct makes the code cleaner and easier to
-// understand.
 //
 //===----------------------------------------------------------------------===//
 

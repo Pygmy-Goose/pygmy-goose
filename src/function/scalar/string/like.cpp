@@ -12,7 +12,7 @@ namespace duckdb {
 bool Glob(const char *string, idx_t slen, const char *pattern, idx_t plen, bool allow_question_mark) {
 	idx_t sidx = 0;
 	idx_t pidx = 0;
-main_loop : {
+main_loop: {
 	// main matching loop
 	while (sidx < slen && pidx < plen) {
 		char s = string[sidx];
@@ -74,7 +74,7 @@ main_loop : {
 	// we are finished only if we have consumed the full pattern
 	return pidx == plen && sidx == slen;
 }
-parse_bracket : {
+parse_bracket: {
 	// inside a bracket
 	if (pidx == plen) {
 		return false;

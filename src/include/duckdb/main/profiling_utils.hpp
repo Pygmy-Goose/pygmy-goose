@@ -27,9 +27,9 @@ struct ActiveTimer;
 // Top level query metrics
 struct QueryMetrics {
 public:
-    QueryMetrics() {
-        Reset();
-    }
+	QueryMetrics() {
+		Reset();
+	}
 
 	ProfilingInfo query_global_info;
 
@@ -37,46 +37,57 @@ public:
 	unique_ptr<ActiveTimer> latency_timer;
 
 public:
-    void UpdateMetric(const MetricType metric, idx_t addition) {
-        active_metrics[GetMetricsIndex(metric)] += addition;
-    }
+	void UpdateMetric(const MetricType metric, idx_t addition) {
+		active_metrics[GetMetricsIndex(metric)] += addition;
+	}
 
-    idx_t GetMetricValue(const MetricType metric) const {
-        return active_metrics[GetMetricsIndex(metric)];
-    }
+	idx_t GetMetricValue(const MetricType metric) const {
+		return active_metrics[GetMetricsIndex(metric)];
+	}
 
-    double GetMetricInSeconds(const MetricType metric) const {
-        return static_cast<double>(active_metrics[GetMetricsIndex(metric)]) / 1e9;
-    }
+	double GetMetricInSeconds(const MetricType metric) const {
+		return static_cast<double>(active_metrics[GetMetricsIndex(metric)]) / 1e9;
+	}
 
-    void Reset() {
-        for(idx_t i = 0; i < ACTIVELY_TRACKED_METRICS; i++) {
-            active_metrics[i] = 0;
-        }
+	void Reset() {
+		for (idx_t i = 0; i < ACTIVELY_TRACKED_METRICS; i++) {
+			active_metrics[i] = 0;
+		}
 
-        latency_timer.reset();
-        query_name = "";
-    }
+		latency_timer.reset();
+		query_name = "";
+	}
 
-    void Merge(const QueryMetrics &other) {
-        for(idx_t i = 0; i < ACTIVELY_TRACKED_METRICS; i++) {
-            active_metrics[i] += other.active_metrics[i];
-        }
-    }
+	void Merge(const QueryMetrics &other) {
+		for (idx_t i = 0; i < ACTIVELY_TRACKED_METRICS; i++) {
+			active_metrics[i] += other.active_metrics[i];
+		}
+	}
 
 	static idx_t GetMetricsIndex(MetricType type) {
-		switch(type) {
-		case MetricType::ATTACH_LOAD_STORAGE_LATENCY: return 0;
-		case MetricType::ATTACH_REPLAY_WAL_LATENCY: return 1;
-		case MetricType::CHECKPOINT_LATENCY: return 2;
-		case MetricType::COMMIT_LOCAL_STORAGE_LATENCY: return 3;
-		case MetricType::LATENCY: return 4;
-		case MetricType::WAITING_TO_ATTACH_LATENCY: return 5;
-		case MetricType::WRITE_TO_WAL_LATENCY: return 6;
-		case MetricType::TOTAL_BYTES_READ: return 7;
-		case MetricType::TOTAL_BYTES_WRITTEN: return 8;
-		case MetricType::TOTAL_MEMORY_ALLOCATED: return 9;
-		case MetricType::WAL_REPLAY_ENTRY_COUNT: return 10;
+		switch (type) {
+		case MetricType::ATTACH_LOAD_STORAGE_LATENCY:
+			return 0;
+		case MetricType::ATTACH_REPLAY_WAL_LATENCY:
+			return 1;
+		case MetricType::CHECKPOINT_LATENCY:
+			return 2;
+		case MetricType::COMMIT_LOCAL_STORAGE_LATENCY:
+			return 3;
+		case MetricType::LATENCY:
+			return 4;
+		case MetricType::WAITING_TO_ATTACH_LATENCY:
+			return 5;
+		case MetricType::WRITE_TO_WAL_LATENCY:
+			return 6;
+		case MetricType::TOTAL_BYTES_READ:
+			return 7;
+		case MetricType::TOTAL_BYTES_WRITTEN:
+			return 8;
+		case MetricType::TOTAL_MEMORY_ALLOCATED:
+			return 9;
+		case MetricType::WAL_REPLAY_ENTRY_COUNT:
+			return 10;
 		default:
 			throw InternalException("MetricType %s is not actively tracked.", EnumUtil::ToString(type));
 		}
@@ -91,15 +102,18 @@ private:
 class ProfilingUtils {
 public:
 	static void SetMetricToDefault(profiler_metrics_t &metrics, const MetricType &type);
-	static void MetricToJson(duckdb_yyjson::yyjson_mut_doc *doc, duckdb_yyjson::yyjson_mut_val *dest, const char *key_ptr,  profiler_metrics_t &metrics, const MetricType &type);
-	static void CollectMetrics(const MetricType &type, QueryMetrics &query_metrics, Value &metric, ProfilingNode &node, ProfilingInfo &child_info);
+	static void MetricToJson(duckdb_yyjson::yyjson_mut_doc *doc, duckdb_yyjson::yyjson_mut_val *dest,
+	                         const char *key_ptr, profiler_metrics_t &metrics, const MetricType &type);
+	static void CollectMetrics(const MetricType &type, QueryMetrics &query_metrics, Value &metric, ProfilingNode &node,
+	                           ProfilingInfo &child_info);
 };
 
 struct ActiveTimer {
 public:
 	ActiveTimer() : metric(MetricType::EXTRA_INFO), is_active(false) {
 	}
-	ActiveTimer(QueryMetrics &query_metrics, const MetricType metric, const bool is_active = true) : query_metrics(query_metrics), metric(metric), is_active(is_active) {
+	ActiveTimer(QueryMetrics &query_metrics, const MetricType metric, const bool is_active = true)
+	    : query_metrics(query_metrics), metric(metric), is_active(is_active) {
 		// start on constructor
 		if (!is_active) {
 			return;
@@ -142,7 +156,7 @@ public:
 	}
 
 	void Reset() {
-	    if (!is_active) {
+		if (!is_active) {
 			return;
 		}
 		profiler.Reset();
@@ -156,4 +170,4 @@ private:
 	bool is_active;
 };
 
-}
+} // namespace duckdb

@@ -8,78 +8,78 @@ namespace duckdb {
 
 profiler_settings_t MetricsUtils::GetAllMetrics() {
 	return {
-		MetricType::ALL_OPTIMIZERS,
-		MetricType::ATTACH_LOAD_STORAGE_LATENCY,
-		MetricType::ATTACH_REPLAY_WAL_LATENCY,
-		MetricType::BLOCKED_THREAD_TIME,
-		MetricType::CHECKPOINT_LATENCY,
-		MetricType::COMMIT_LOCAL_STORAGE_LATENCY,
-		MetricType::CPU_TIME,
-		MetricType::CUMULATIVE_CARDINALITY,
-		MetricType::CUMULATIVE_OPTIMIZER_TIMING,
-		MetricType::CUMULATIVE_ROWS_SCANNED,
-		MetricType::EXTRA_INFO,
-		MetricType::LATENCY,
-		MetricType::OPERATOR_CARDINALITY,
-		MetricType::OPERATOR_NAME,
-		MetricType::OPERATOR_ROWS_SCANNED,
-		MetricType::OPERATOR_TIMING,
-		MetricType::OPERATOR_TYPE,
-		MetricType::OPTIMIZER_BUILD_SIDE_PROBE_SIDE,
-		MetricType::OPTIMIZER_COLUMN_LIFETIME,
-		MetricType::OPTIMIZER_COMMON_AGGREGATE,
-		MetricType::OPTIMIZER_COMMON_SUBEXPRESSIONS,
-		MetricType::OPTIMIZER_COMMON_SUBPLAN,
-		MetricType::OPTIMIZER_COMPRESSED_MATERIALIZATION,
-		MetricType::OPTIMIZER_CTE_FILTER_PUSHER,
-		MetricType::OPTIMIZER_CTE_INLINING,
-		MetricType::OPTIMIZER_DELIMINATOR,
-		MetricType::OPTIMIZER_DUPLICATE_GROUPS,
-		MetricType::OPTIMIZER_EMPTY_RESULT_PULLUP,
-		MetricType::OPTIMIZER_EXPRESSION_REWRITER,
-		MetricType::OPTIMIZER_EXTENSION,
-		MetricType::OPTIMIZER_FILTER_PULLUP,
-		MetricType::OPTIMIZER_FILTER_PUSHDOWN,
-		MetricType::OPTIMIZER_IN_CLAUSE,
-		MetricType::OPTIMIZER_JOIN_ELIMINATION,
-		MetricType::OPTIMIZER_JOIN_FILTER_PUSHDOWN,
-		MetricType::OPTIMIZER_JOIN_ORDER,
-		MetricType::OPTIMIZER_LATE_MATERIALIZATION,
-		MetricType::OPTIMIZER_LIMIT_PUSHDOWN,
-		MetricType::OPTIMIZER_MATERIALIZED_CTE,
-		MetricType::OPTIMIZER_REGEX_RANGE,
-		MetricType::OPTIMIZER_REORDER_FILTER,
-		MetricType::OPTIMIZER_ROW_GROUP_PRUNER,
-		MetricType::OPTIMIZER_SAMPLING_PUSHDOWN,
-		MetricType::OPTIMIZER_STATISTICS_PROPAGATION,
-		MetricType::OPTIMIZER_SUM_REWRITER,
-		MetricType::OPTIMIZER_TOP_N,
-		MetricType::OPTIMIZER_TOP_N_WINDOW_ELIMINATION,
-		MetricType::OPTIMIZER_UNNEST_REWRITER,
-		MetricType::OPTIMIZER_UNUSED_COLUMNS,
-		MetricType::OPTIMIZER_WINDOW_SELF_JOIN,
-		MetricType::PHYSICAL_PLANNER,
-		MetricType::PHYSICAL_PLANNER_COLUMN_BINDING,
-		MetricType::PHYSICAL_PLANNER_CREATE_PLAN,
-		MetricType::PHYSICAL_PLANNER_RESOLVE_TYPES,
-		MetricType::PLANNER,
-		MetricType::PLANNER_BINDING,
-		MetricType::QUERY_NAME,
-		MetricType::RESULT_SET_SIZE,
-		MetricType::ROWS_RETURNED,
-		MetricType::SYSTEM_PEAK_BUFFER_MEMORY,
-		MetricType::SYSTEM_PEAK_TEMP_DIR_SIZE,
-		MetricType::TOTAL_BYTES_READ,
-		MetricType::TOTAL_BYTES_WRITTEN,
-		MetricType::TOTAL_MEMORY_ALLOCATED,
-		MetricType::WAITING_TO_ATTACH_LATENCY,
-		MetricType::WAL_REPLAY_ENTRY_COUNT,
-		MetricType::WRITE_TO_WAL_LATENCY,
+	    MetricType::ALL_OPTIMIZERS,
+	    MetricType::ATTACH_LOAD_STORAGE_LATENCY,
+	    MetricType::ATTACH_REPLAY_WAL_LATENCY,
+	    MetricType::BLOCKED_THREAD_TIME,
+	    MetricType::CHECKPOINT_LATENCY,
+	    MetricType::COMMIT_LOCAL_STORAGE_LATENCY,
+	    MetricType::CPU_TIME,
+	    MetricType::CUMULATIVE_CARDINALITY,
+	    MetricType::CUMULATIVE_OPTIMIZER_TIMING,
+	    MetricType::CUMULATIVE_ROWS_SCANNED,
+	    MetricType::EXTRA_INFO,
+	    MetricType::LATENCY,
+	    MetricType::OPERATOR_CARDINALITY,
+	    MetricType::OPERATOR_NAME,
+	    MetricType::OPERATOR_ROWS_SCANNED,
+	    MetricType::OPERATOR_TIMING,
+	    MetricType::OPERATOR_TYPE,
+	    MetricType::OPTIMIZER_BUILD_SIDE_PROBE_SIDE,
+	    MetricType::OPTIMIZER_COLUMN_LIFETIME,
+	    MetricType::OPTIMIZER_COMMON_AGGREGATE,
+	    MetricType::OPTIMIZER_COMMON_SUBEXPRESSIONS,
+	    MetricType::OPTIMIZER_COMMON_SUBPLAN,
+	    MetricType::OPTIMIZER_COMPRESSED_MATERIALIZATION,
+	    MetricType::OPTIMIZER_CTE_FILTER_PUSHER,
+	    MetricType::OPTIMIZER_CTE_INLINING,
+	    MetricType::OPTIMIZER_DELIMINATOR,
+	    MetricType::OPTIMIZER_DUPLICATE_GROUPS,
+	    MetricType::OPTIMIZER_EMPTY_RESULT_PULLUP,
+	    MetricType::OPTIMIZER_EXPRESSION_REWRITER,
+	    MetricType::OPTIMIZER_EXTENSION,
+	    MetricType::OPTIMIZER_FILTER_PULLUP,
+	    MetricType::OPTIMIZER_FILTER_PUSHDOWN,
+	    MetricType::OPTIMIZER_IN_CLAUSE,
+	    MetricType::OPTIMIZER_JOIN_ELIMINATION,
+	    MetricType::OPTIMIZER_JOIN_FILTER_PUSHDOWN,
+	    MetricType::OPTIMIZER_JOIN_ORDER,
+	    MetricType::OPTIMIZER_LATE_MATERIALIZATION,
+	    MetricType::OPTIMIZER_LIMIT_PUSHDOWN,
+	    MetricType::OPTIMIZER_MATERIALIZED_CTE,
+	    MetricType::OPTIMIZER_REGEX_RANGE,
+	    MetricType::OPTIMIZER_REORDER_FILTER,
+	    MetricType::OPTIMIZER_ROW_GROUP_PRUNER,
+	    MetricType::OPTIMIZER_SAMPLING_PUSHDOWN,
+	    MetricType::OPTIMIZER_STATISTICS_PROPAGATION,
+	    MetricType::OPTIMIZER_SUM_REWRITER,
+	    MetricType::OPTIMIZER_TOP_N,
+	    MetricType::OPTIMIZER_TOP_N_WINDOW_ELIMINATION,
+	    MetricType::OPTIMIZER_UNNEST_REWRITER,
+	    MetricType::OPTIMIZER_UNUSED_COLUMNS,
+	    MetricType::OPTIMIZER_WINDOW_SELF_JOIN,
+	    MetricType::PHYSICAL_PLANNER,
+	    MetricType::PHYSICAL_PLANNER_COLUMN_BINDING,
+	    MetricType::PHYSICAL_PLANNER_CREATE_PLAN,
+	    MetricType::PHYSICAL_PLANNER_RESOLVE_TYPES,
+	    MetricType::PLANNER,
+	    MetricType::PLANNER_BINDING,
+	    MetricType::QUERY_NAME,
+	    MetricType::RESULT_SET_SIZE,
+	    MetricType::ROWS_RETURNED,
+	    MetricType::SYSTEM_PEAK_BUFFER_MEMORY,
+	    MetricType::SYSTEM_PEAK_TEMP_DIR_SIZE,
+	    MetricType::TOTAL_BYTES_READ,
+	    MetricType::TOTAL_BYTES_WRITTEN,
+	    MetricType::TOTAL_MEMORY_ALLOCATED,
+	    MetricType::WAITING_TO_ATTACH_LATENCY,
+	    MetricType::WAL_REPLAY_ENTRY_COUNT,
+	    MetricType::WRITE_TO_WAL_LATENCY,
 	};
 }
 
 profiler_settings_t MetricsUtils::GetMetricsByGroupType(MetricGroup type) {
-	switch(type) {
+	switch (type) {
 	case MetricGroup::ALL:
 		return GetAllMetrics();
 	case MetricGroup::CORE:
@@ -103,19 +103,19 @@ profiler_settings_t MetricsUtils::GetMetricsByGroupType(MetricGroup type) {
 
 profiler_settings_t MetricsUtils::GetCoreMetrics() {
 	return {
-		MetricType::CPU_TIME,
-		MetricType::CUMULATIVE_CARDINALITY,
-		MetricType::CUMULATIVE_ROWS_SCANNED,
-		MetricType::EXTRA_INFO,
-		MetricType::LATENCY,
-		MetricType::QUERY_NAME,
-		MetricType::RESULT_SET_SIZE,
-		MetricType::ROWS_RETURNED,
+	    MetricType::CPU_TIME,
+	    MetricType::CUMULATIVE_CARDINALITY,
+	    MetricType::CUMULATIVE_ROWS_SCANNED,
+	    MetricType::EXTRA_INFO,
+	    MetricType::LATENCY,
+	    MetricType::QUERY_NAME,
+	    MetricType::RESULT_SET_SIZE,
+	    MetricType::ROWS_RETURNED,
 	};
 }
 
 bool MetricsUtils::IsCoreMetric(MetricType type) {
-	switch(type) {
+	switch (type) {
 	case MetricType::CPU_TIME:
 	case MetricType::CUMULATIVE_CARDINALITY:
 	case MetricType::CUMULATIVE_ROWS_SCANNED:
@@ -132,37 +132,37 @@ bool MetricsUtils::IsCoreMetric(MetricType type) {
 
 profiler_settings_t MetricsUtils::GetDefaultMetrics() {
 	return {
-		MetricType::ATTACH_LOAD_STORAGE_LATENCY,
-		MetricType::ATTACH_REPLAY_WAL_LATENCY,
-		MetricType::BLOCKED_THREAD_TIME,
-		MetricType::CHECKPOINT_LATENCY,
-		MetricType::COMMIT_LOCAL_STORAGE_LATENCY,
-		MetricType::CPU_TIME,
-		MetricType::CUMULATIVE_CARDINALITY,
-		MetricType::CUMULATIVE_ROWS_SCANNED,
-		MetricType::EXTRA_INFO,
-		MetricType::LATENCY,
-		MetricType::OPERATOR_CARDINALITY,
-		MetricType::OPERATOR_NAME,
-		MetricType::OPERATOR_ROWS_SCANNED,
-		MetricType::OPERATOR_TIMING,
-		MetricType::OPERATOR_TYPE,
-		MetricType::QUERY_NAME,
-		MetricType::RESULT_SET_SIZE,
-		MetricType::ROWS_RETURNED,
-		MetricType::SYSTEM_PEAK_BUFFER_MEMORY,
-		MetricType::SYSTEM_PEAK_TEMP_DIR_SIZE,
-		MetricType::TOTAL_BYTES_READ,
-		MetricType::TOTAL_BYTES_WRITTEN,
-		MetricType::TOTAL_MEMORY_ALLOCATED,
-		MetricType::WAITING_TO_ATTACH_LATENCY,
-		MetricType::WAL_REPLAY_ENTRY_COUNT,
-		MetricType::WRITE_TO_WAL_LATENCY,
+	    MetricType::ATTACH_LOAD_STORAGE_LATENCY,
+	    MetricType::ATTACH_REPLAY_WAL_LATENCY,
+	    MetricType::BLOCKED_THREAD_TIME,
+	    MetricType::CHECKPOINT_LATENCY,
+	    MetricType::COMMIT_LOCAL_STORAGE_LATENCY,
+	    MetricType::CPU_TIME,
+	    MetricType::CUMULATIVE_CARDINALITY,
+	    MetricType::CUMULATIVE_ROWS_SCANNED,
+	    MetricType::EXTRA_INFO,
+	    MetricType::LATENCY,
+	    MetricType::OPERATOR_CARDINALITY,
+	    MetricType::OPERATOR_NAME,
+	    MetricType::OPERATOR_ROWS_SCANNED,
+	    MetricType::OPERATOR_TIMING,
+	    MetricType::OPERATOR_TYPE,
+	    MetricType::QUERY_NAME,
+	    MetricType::RESULT_SET_SIZE,
+	    MetricType::ROWS_RETURNED,
+	    MetricType::SYSTEM_PEAK_BUFFER_MEMORY,
+	    MetricType::SYSTEM_PEAK_TEMP_DIR_SIZE,
+	    MetricType::TOTAL_BYTES_READ,
+	    MetricType::TOTAL_BYTES_WRITTEN,
+	    MetricType::TOTAL_MEMORY_ALLOCATED,
+	    MetricType::WAITING_TO_ATTACH_LATENCY,
+	    MetricType::WAL_REPLAY_ENTRY_COUNT,
+	    MetricType::WRITE_TO_WAL_LATENCY,
 	};
 }
 
 bool MetricsUtils::IsDefaultMetric(MetricType type) {
-	switch(type) {
+	switch (type) {
 	case MetricType::ATTACH_LOAD_STORAGE_LATENCY:
 	case MetricType::ATTACH_REPLAY_WAL_LATENCY:
 	case MetricType::BLOCKED_THREAD_TIME:
@@ -197,15 +197,15 @@ bool MetricsUtils::IsDefaultMetric(MetricType type) {
 
 profiler_settings_t MetricsUtils::GetExecutionMetrics() {
 	return {
-		MetricType::BLOCKED_THREAD_TIME,
-		MetricType::SYSTEM_PEAK_BUFFER_MEMORY,
-		MetricType::SYSTEM_PEAK_TEMP_DIR_SIZE,
-		MetricType::TOTAL_MEMORY_ALLOCATED,
+	    MetricType::BLOCKED_THREAD_TIME,
+	    MetricType::SYSTEM_PEAK_BUFFER_MEMORY,
+	    MetricType::SYSTEM_PEAK_TEMP_DIR_SIZE,
+	    MetricType::TOTAL_MEMORY_ALLOCATED,
 	};
 }
 
 bool MetricsUtils::IsExecutionMetric(MetricType type) {
-	switch(type) {
+	switch (type) {
 	case MetricType::BLOCKED_THREAD_TIME:
 	case MetricType::SYSTEM_PEAK_BUFFER_MEMORY:
 	case MetricType::SYSTEM_PEAK_TEMP_DIR_SIZE:
@@ -218,20 +218,20 @@ bool MetricsUtils::IsExecutionMetric(MetricType type) {
 
 profiler_settings_t MetricsUtils::GetFileMetrics() {
 	return {
-		MetricType::ATTACH_LOAD_STORAGE_LATENCY,
-		MetricType::ATTACH_REPLAY_WAL_LATENCY,
-		MetricType::CHECKPOINT_LATENCY,
-		MetricType::COMMIT_LOCAL_STORAGE_LATENCY,
-		MetricType::TOTAL_BYTES_READ,
-		MetricType::TOTAL_BYTES_WRITTEN,
-		MetricType::WAITING_TO_ATTACH_LATENCY,
-		MetricType::WAL_REPLAY_ENTRY_COUNT,
-		MetricType::WRITE_TO_WAL_LATENCY,
+	    MetricType::ATTACH_LOAD_STORAGE_LATENCY,
+	    MetricType::ATTACH_REPLAY_WAL_LATENCY,
+	    MetricType::CHECKPOINT_LATENCY,
+	    MetricType::COMMIT_LOCAL_STORAGE_LATENCY,
+	    MetricType::TOTAL_BYTES_READ,
+	    MetricType::TOTAL_BYTES_WRITTEN,
+	    MetricType::WAITING_TO_ATTACH_LATENCY,
+	    MetricType::WAL_REPLAY_ENTRY_COUNT,
+	    MetricType::WRITE_TO_WAL_LATENCY,
 	};
 }
 
 bool MetricsUtils::IsFileMetric(MetricType type) {
-	switch(type) {
+	switch (type) {
 	case MetricType::ATTACH_LOAD_STORAGE_LATENCY:
 	case MetricType::ATTACH_REPLAY_WAL_LATENCY:
 	case MetricType::CHECKPOINT_LATENCY:
@@ -249,16 +249,13 @@ bool MetricsUtils::IsFileMetric(MetricType type) {
 
 profiler_settings_t MetricsUtils::GetOperatorMetrics() {
 	return {
-		MetricType::OPERATOR_CARDINALITY,
-		MetricType::OPERATOR_NAME,
-		MetricType::OPERATOR_ROWS_SCANNED,
-		MetricType::OPERATOR_TIMING,
-		MetricType::OPERATOR_TYPE,
+	    MetricType::OPERATOR_CARDINALITY, MetricType::OPERATOR_NAME, MetricType::OPERATOR_ROWS_SCANNED,
+	    MetricType::OPERATOR_TIMING,      MetricType::OPERATOR_TYPE,
 	};
 }
 
 bool MetricsUtils::IsOperatorMetric(MetricType type) {
-	switch(type) {
+	switch (type) {
 	case MetricType::OPERATOR_CARDINALITY:
 	case MetricType::OPERATOR_NAME:
 	case MetricType::OPERATOR_ROWS_SCANNED:
@@ -281,7 +278,6 @@ profiler_settings_t MetricsUtils::GetOptimizerMetrics() {
 bool MetricsUtils::IsOptimizerMetric(MetricType type) {
 	return static_cast<uint8_t>(type) >= START_OPTIMIZER && static_cast<uint8_t>(type) <= END_OPTIMIZER;
 }
-
 
 MetricType MetricsUtils::GetOptimizerMetricByType(OptimizerType type) {
 	if (type == OptimizerType::INVALID) {
@@ -311,19 +307,19 @@ OptimizerType MetricsUtils::GetOptimizerTypeByMetric(MetricType type) {
 
 profiler_settings_t MetricsUtils::GetPhaseTimingMetrics() {
 	return {
-		MetricType::ALL_OPTIMIZERS,
-		MetricType::CUMULATIVE_OPTIMIZER_TIMING,
-		MetricType::PHYSICAL_PLANNER,
-		MetricType::PHYSICAL_PLANNER_COLUMN_BINDING,
-		MetricType::PHYSICAL_PLANNER_CREATE_PLAN,
-		MetricType::PHYSICAL_PLANNER_RESOLVE_TYPES,
-		MetricType::PLANNER,
-		MetricType::PLANNER_BINDING,
+	    MetricType::ALL_OPTIMIZERS,
+	    MetricType::CUMULATIVE_OPTIMIZER_TIMING,
+	    MetricType::PHYSICAL_PLANNER,
+	    MetricType::PHYSICAL_PLANNER_COLUMN_BINDING,
+	    MetricType::PHYSICAL_PLANNER_CREATE_PLAN,
+	    MetricType::PHYSICAL_PLANNER_RESOLVE_TYPES,
+	    MetricType::PLANNER,
+	    MetricType::PLANNER_BINDING,
 	};
 }
 
 bool MetricsUtils::IsPhaseTimingMetric(MetricType type) {
-	switch(type) {
+	switch (type) {
 	case MetricType::ALL_OPTIMIZERS:
 	case MetricType::CUMULATIVE_OPTIMIZER_TIMING:
 	case MetricType::PHYSICAL_PLANNER:
@@ -340,25 +336,25 @@ bool MetricsUtils::IsPhaseTimingMetric(MetricType type) {
 
 profiler_settings_t MetricsUtils::GetRootScopeMetrics() {
 	return {
-		MetricType::ATTACH_LOAD_STORAGE_LATENCY,
-		MetricType::ATTACH_REPLAY_WAL_LATENCY,
-		MetricType::BLOCKED_THREAD_TIME,
-		MetricType::CHECKPOINT_LATENCY,
-		MetricType::COMMIT_LOCAL_STORAGE_LATENCY,
-		MetricType::LATENCY,
-		MetricType::QUERY_NAME,
-		MetricType::ROWS_RETURNED,
-		MetricType::TOTAL_BYTES_READ,
-		MetricType::TOTAL_BYTES_WRITTEN,
-		MetricType::TOTAL_MEMORY_ALLOCATED,
-		MetricType::WAITING_TO_ATTACH_LATENCY,
-		MetricType::WAL_REPLAY_ENTRY_COUNT,
-		MetricType::WRITE_TO_WAL_LATENCY,
+	    MetricType::ATTACH_LOAD_STORAGE_LATENCY,
+	    MetricType::ATTACH_REPLAY_WAL_LATENCY,
+	    MetricType::BLOCKED_THREAD_TIME,
+	    MetricType::CHECKPOINT_LATENCY,
+	    MetricType::COMMIT_LOCAL_STORAGE_LATENCY,
+	    MetricType::LATENCY,
+	    MetricType::QUERY_NAME,
+	    MetricType::ROWS_RETURNED,
+	    MetricType::TOTAL_BYTES_READ,
+	    MetricType::TOTAL_BYTES_WRITTEN,
+	    MetricType::TOTAL_MEMORY_ALLOCATED,
+	    MetricType::WAITING_TO_ATTACH_LATENCY,
+	    MetricType::WAL_REPLAY_ENTRY_COUNT,
+	    MetricType::WRITE_TO_WAL_LATENCY,
 	};
 }
 
 bool MetricsUtils::IsRootScopeMetric(MetricType type) {
-	switch(type) {
+	switch (type) {
 	case MetricType::ATTACH_LOAD_STORAGE_LATENCY:
 	case MetricType::ATTACH_REPLAY_WAL_LATENCY:
 	case MetricType::BLOCKED_THREAD_TIME:
@@ -379,4 +375,4 @@ bool MetricsUtils::IsRootScopeMetric(MetricType type) {
 	}
 }
 
-}
+} // namespace duckdb

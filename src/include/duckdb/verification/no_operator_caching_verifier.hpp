@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/verification/unoptimized_statement_verifier.hpp
+// duckdb/verification/no_operator_caching_verifier.hpp
 //
 //
 //===----------------------------------------------------------------------===//

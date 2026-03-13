@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/catalog/catalog_entry.hpp
+// duckdb/catalog/catalog_entry/dependency/dependency_subject_entry.hpp
 //
 //
 //===----------------------------------------------------------------------===//

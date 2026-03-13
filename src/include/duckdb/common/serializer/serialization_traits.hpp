@@ -1,3 +1,11 @@
+//===----------------------------------------------------------------------===//
+//                         DuckDB
+//
+// duckdb/common/serializer/serialization_traits.hpp
+//
+//
+//===----------------------------------------------------------------------===//
+
 #pragma once
 #include <type_traits>
 #include <cstdint>

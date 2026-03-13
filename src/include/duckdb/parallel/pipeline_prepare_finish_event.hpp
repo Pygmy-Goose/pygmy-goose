@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/parallel/pipeline_pre_finish_event.hpp
+// duckdb/parallel/pipeline_prepare_finish_event.hpp
 //
 //
 //===----------------------------------------------------------------------===//

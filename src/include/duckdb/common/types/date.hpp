@@ -73,10 +73,10 @@ struct date_t { // NOLINT
 	// special values
 	static inline date_t infinity() { // NOLINT
 		return date_t(NumericLimits<int32_t>::Maximum());
-	}                                  // NOLINT
+	} // NOLINT
 	static inline date_t ninfinity() { // NOLINT
 		return date_t(-NumericLimits<int32_t>::Maximum());
-	}                              // NOLINT
+	} // NOLINT
 	static inline date_t epoch() { // NOLINT
 		return date_t(0);
 	} // NOLINT

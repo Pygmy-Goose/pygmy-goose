@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// planner/operator/logical_create_secret.hpp
+// duckdb/planner/operator/logical_create_secret.hpp
 //
 //
 //===----------------------------------------------------------------------===//

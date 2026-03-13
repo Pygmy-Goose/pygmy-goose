@@ -50,8 +50,7 @@ public:
 #ifdef DUCKDB_CLANG_TIDY
 	[[clang::reinitializes]]
 #endif
-	inline void
-	clear() noexcept { // NOLINT: hiding on purpose
+	inline void clear() noexcept { // NOLINT: hiding on purpose
 		original::clear();
 	}
 

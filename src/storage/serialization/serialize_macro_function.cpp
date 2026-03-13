@@ -13,8 +13,10 @@ namespace duckdb {
 
 void MacroFunction::Serialize(Serializer &serializer) const {
 	serializer.WriteProperty<MacroType>(100, "type", type);
-	serializer.WritePropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(101, "parameters", GetPositionalParametersForSerialization(serializer));
-	serializer.WritePropertyWithDefault<InsertionOrderPreservingMap<unique_ptr<ParsedExpression>>>(102, "default_parameters", default_parameters);
+	serializer.WritePropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(
+	    101, "parameters", GetPositionalParametersForSerialization(serializer));
+	serializer.WritePropertyWithDefault<InsertionOrderPreservingMap<unique_ptr<ParsedExpression>>>(
+	    102, "default_parameters", default_parameters);
 	if (serializer.ShouldSerialize(6)) {
 		serializer.WritePropertyWithDefault<vector<LogicalType>>(103, "types", types, vector<LogicalType>());
 	}
@@ -23,7 +25,9 @@ void MacroFunction::Serialize(Serializer &serializer) const {
 unique_ptr<MacroFunction> MacroFunction::Deserialize(Deserializer &deserializer) {
 	auto type = deserializer.ReadProperty<MacroType>(100, "type");
 	auto parameters = deserializer.ReadPropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(101, "parameters");
-	auto default_parameters = deserializer.ReadPropertyWithDefault<InsertionOrderPreservingMap<unique_ptr<ParsedExpression>>>(102, "default_parameters");
+	auto default_parameters =
+	    deserializer.ReadPropertyWithDefault<InsertionOrderPreservingMap<unique_ptr<ParsedExpression>>>(
+	        102, "default_parameters");
 	auto types = deserializer.ReadPropertyWithExplicitDefault<vector<LogicalType>>(103, "types", vector<LogicalType>());
 	unique_ptr<MacroFunction> result;
 	switch (type) {

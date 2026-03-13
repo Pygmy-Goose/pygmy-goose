@@ -4,6 +4,7 @@
 // duckdb/optimizer/rule/predicate_factoring.hpp
 //
 //
+//
 //===----------------------------------------------------------------------===//
 
 #pragma once

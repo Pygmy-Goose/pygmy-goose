@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/optimizer/rule/like_optimizations.hpp
+// duckdb/optimizer/rule/regex_optimizations.hpp
 //
 //
 //===----------------------------------------------------------------------===//

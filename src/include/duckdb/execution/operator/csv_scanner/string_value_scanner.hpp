@@ -19,7 +19,7 @@ struct CSVBufferUsage {
 	CSVBufferUsage(CSVBufferManager &buffer_manager_p, idx_t buffer_idx_p)
 	    : buffer_manager(buffer_manager_p), buffer_idx(buffer_idx_p) {
 
-	                                        };
+	      };
 	~CSVBufferUsage() {
 		buffer_manager.ResetBuffer(buffer_idx);
 	}

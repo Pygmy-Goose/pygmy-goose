@@ -39,7 +39,8 @@ struct StructExtractAtFun {
 struct StructPackFun {
 	static constexpr const char *Name = "struct_pack";
 	static constexpr const char *Parameters = "name:=any,...";
-	static constexpr const char *Description = "Create a STRUCT containing the argument values. The entry name will be the bound variable name.";
+	static constexpr const char *Description =
+	    "Create a STRUCT containing the argument values. The entry name will be the bound variable name.";
 	static constexpr const char *Example = "struct_pack(i := 4, s := 'string')";
 	static constexpr const char *Categories = "";
 
@@ -59,8 +60,10 @@ struct RowFun {
 struct RemapStructFun {
 	static constexpr const char *Name = "remap_struct";
 	static constexpr const char *Parameters = "input,target_type,mapping,defaults";
-	static constexpr const char *Description = "Map a struct to another struct type, potentially re-ordering, renaming and casting members and filling in defaults for missing values";
-	static constexpr const char *Example = "remap_struct({'i': 1, 'j': 2}, NULL::ROW(v1 INT, v2 INT, v3 INT), {'v1': 'j', 'v3': 'i'}, {'v2': NULL::INTEGER})";
+	static constexpr const char *Description = "Map a struct to another struct type, potentially re-ordering, renaming "
+	                                           "and casting members and filling in defaults for missing values";
+	static constexpr const char *Example = "remap_struct({'i': 1, 'j': 2}, NULL::ROW(v1 INT, v2 INT, v3 INT), {'v1': "
+	                                       "'j', 'v3': 'i'}, {'v2': NULL::INTEGER})";
 	static constexpr const char *Categories = "";
 
 	static ScalarFunction GetFunction();

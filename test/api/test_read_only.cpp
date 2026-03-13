@@ -116,7 +116,9 @@ TEST_CASE("Test view creation using a read only database", "[readonly]") {
 	readonly_config.options.access_mode = AccessMode::READ_ONLY;
 
 	// create db in first place
-	{ auto db_rw = DuckDB(dbdir); }
+	{
+		auto db_rw = DuckDB(dbdir);
+	}
 	db = make_uniq<DuckDB>(dbdir, &readonly_config);
 	// create the database file and initialize it with data
 	con = make_uniq<Connection>(*db);

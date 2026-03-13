@@ -173,7 +173,7 @@ bool MiniZStreamWrapper::Read(StreamData &sd) {
 		GZipFileSystem::VerifyGZIPHeader(gzip_hdr, GZIP_HEADER_MINSIZE, nullptr);
 		body_ptr += GZIP_HEADER_MINSIZE;
 		if (gzip_hdr[3] & GZIP_FLAG_EXTRA) {
-			auto xlen = NumericCast<idx_t>((uint8_t)*body_ptr | (uint8_t) * (body_ptr + 1) << 8);
+			auto xlen = NumericCast<idx_t>((uint8_t)*body_ptr | (uint8_t)*(body_ptr + 1) << 8);
 			body_ptr += xlen + 2;
 			if (GZIP_FOOTER_SIZE + GZIP_HEADER_MINSIZE + 2 + xlen >= GZIP_HEADER_MAXSIZE) {
 				throw InternalException("Extra field resulting in GZIP header larger than defined maximum (%d)",

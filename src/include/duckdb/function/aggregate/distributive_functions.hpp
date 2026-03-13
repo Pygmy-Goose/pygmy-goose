@@ -38,7 +38,8 @@ struct CountFun {
 struct FirstFun {
 	static constexpr const char *Name = "first";
 	static constexpr const char *Parameters = "arg";
-	static constexpr const char *Description = "Returns the first value (NULL or non-NULL) from arg. This function is affected by ordering.";
+	static constexpr const char *Description =
+	    "Returns the first value (NULL or non-NULL) from arg. This function is affected by ordering.";
 	static constexpr const char *Example = "first(A)";
 	static constexpr const char *Categories = "";
 
@@ -54,7 +55,8 @@ struct ArbitraryFun {
 struct LastFun {
 	static constexpr const char *Name = "last";
 	static constexpr const char *Parameters = "arg";
-	static constexpr const char *Description = "Returns the last value of a column. This function is affected by ordering.";
+	static constexpr const char *Description =
+	    "Returns the last value of a column. This function is affected by ordering.";
 	static constexpr const char *Example = "last(A)";
 	static constexpr const char *Categories = "";
 
@@ -64,7 +66,8 @@ struct LastFun {
 struct AnyValueFun {
 	static constexpr const char *Name = "any_value";
 	static constexpr const char *Parameters = "arg";
-	static constexpr const char *Description = "Returns the first non-NULL value from arg. This function is affected by ordering.";
+	static constexpr const char *Description =
+	    "Returns the first non-NULL value from arg. This function is affected by ordering.";
 	static constexpr const char *Example = "";
 	static constexpr const char *Categories = "";
 
