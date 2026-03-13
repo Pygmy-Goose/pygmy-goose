@@ -372,7 +372,10 @@ def format_file(full_path, check_only, force, silent):
             with open(full_path, "w", encoding="utf-8") as f:
                 f.write(formatted)
         else:
-            cmd = FORMAT_COMMANDS[ext] + ["-i", full_path]
+            if ext == ".py":
+                cmd = FORMAT_COMMANDS[ext] + [full_path]
+            else:
+                cmd = FORMAT_COMMANDS[ext] + ["-i", full_path]
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.stderr:
                 print(os.getcwd())
