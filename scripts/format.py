@@ -132,9 +132,7 @@ FORMAT_COMMANDS = {
     ".benchmark": TEST_FORMAT,
 }
 
-header_top = (
-    "//===----------------------------------------------------------------------===//\n"
-)
+header_top = "//===----------------------------------------------------------------------===//\n"
 header_top += "//                         DuckDB\n" + "//\n"
 header_bottom = "//\n" + "//\n"
 header_bottom += "//===----------------------------------------------------------------------===//\n\n"
@@ -142,18 +140,14 @@ base_dir = os.path.join(os.getcwd(), "src/include")
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        prog="python scripts/format.py", description="Format source directory files"
-    )
+    parser = argparse.ArgumentParser(prog="python scripts/format.py", description="Format source directory files")
     parser.add_argument(
         "revision",
         nargs="?",
         default="HEAD",
         help="Revision number or --all to format all files (default: HEAD)",
     )
-    parser.add_argument(
-        "--check", action="store_true", help="Only print differences (default)"
-    )
+    parser.add_argument("--check", action="store_true", help="Only print differences (default)")
     parser.add_argument("--fix", action="store_true", help="Fix the files")
     parser.add_argument("-a", "--all", action="store_true", help="Format all files")
     parser.add_argument(
@@ -163,9 +157,7 @@ def parse_args():
         default=[],
         help="Format specified directories",
     )
-    parser.add_argument(
-        "-y", "--noconfirm", action="store_true", help="Skip confirmation prompt"
-    )
+    parser.add_argument("-y", "--noconfirm", action="store_true", help="Skip confirmation prompt")
     parser.add_argument("-q", "--silent", action="store_true", help="Suppress output")
     parser.add_argument("-f", "--force", action="store_true", help="Force formatting")
     return parser.parse_args()
@@ -201,9 +193,7 @@ def can_format_file(full_path):
 
 
 def get_changed_files(revision):
-    proc = subprocess.Popen(
-        ["git", "diff", "--name-only", revision], stdout=subprocess.PIPE
-    )
+    proc = subprocess.Popen(["git", "diff", "--name-only", revision], stdout=subprocess.PIPE)
     files = proc.stdout.read().decode("utf8").split("\n")
     changed_files = []
     for f in files:
@@ -274,9 +264,7 @@ def format_file(full_path, check_only, force, silent):
             formatted = formatted or ""
         else:
             cmd = FORMAT_COMMANDS[ext] + [full_path]
-            process = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-            )
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             formatted, stderr = process.communicate()
             formatted = formatted or ""
         if cmd and stderr:
@@ -298,9 +286,7 @@ def format_file(full_path, check_only, force, silent):
             formatted, stderr = process.communicate(input=original)
         else:
             cmd = FORMAT_COMMANDS[ext] + [full_path]
-            process = subprocess.Popen(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
-            )
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             formatted, stderr = process.communicate()
         if stderr:
             print(os.getcwd())
@@ -320,10 +306,7 @@ def format_file(full_path, check_only, force, silent):
             text = header_top + header_middle + header_bottom
             is_old_header = True
             for line in lines:
-                if (
-                    not (line.startswith("//") or line.startswith("\n"))
-                    and is_old_header
-                ):
+                if not (line.startswith("//") or line.startswith("\n")) and is_old_header:
                     is_old_header = False
                 if not is_old_header:
                     text += line
@@ -352,9 +335,7 @@ def format_file(full_path, check_only, force, silent):
             print("Found differences in file " + full_path)
             print("----------------------------------------")
             print("----------------------------------------")
-            diff_result = difflib.unified_diff(
-                original.split("\n"), formatted.split("\n")
-            )
+            diff_result = difflib.unified_diff(original.split("\n"), formatted.split("\n"))
             total_diff = ""
             for diff_line in diff_result:
                 total_diff += diff_line + "\n"
@@ -392,10 +373,7 @@ def format_file(full_path, check_only, force, silent):
             text = header_top + header_middle + header_bottom
             is_old_header = True
             for line in lines:
-                if (
-                    not (line.startswith("//") or line.startswith("\n"))
-                    and is_old_header
-                ):
+                if not (line.startswith("//") or line.startswith("\n")) and is_old_header:
                     is_old_header = False
                 if not is_old_header:
                     text += line
