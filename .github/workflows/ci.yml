@@ -40,6 +40,11 @@ jobs:
       - name: Format Check
         run: make format-check
 
+      - name: Windows set exclusions on path checking
+        if: runner.os == 'Windows'
+        run: |
+          powershell.exe -Command "Add-MpPreference -ExclusionPath '${{ github.workspace }}'"
+
       - name: Build
         env:
           CMAKE_C_COMPILER_LAUNCHER: ccache
