@@ -193,8 +193,7 @@ def can_format_file(full_path):
 
 
 def get_changed_files(revision):
-    proc = subprocess.Popen(["git", "diff", "--name-only", revision], stdout=subprocess.PIPE)
-    files = proc.stdout.read().decode("utf8").split("\n")
+    files = subprocess.check_output(["git", "diff", "--name-only", revision]).decode("utf8").split("\n")
     changed_files = []
     for f in files:
         if not can_format_file(f):
