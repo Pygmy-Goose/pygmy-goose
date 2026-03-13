@@ -115,6 +115,9 @@ BLACK_FORMAT = ["black", "-q", "--skip-string-normalization", "--line-length", "
 CMAKE_FORMAT = ["cmake-format"]
 TEST_FORMAT = ["./scripts/format_test_benchmark.py"]
 
+CLANG_EXTENSIONS = {".cpp", ".ipp", ".c", ".hpp", ".h", ".hh", ".cc", ".java"}
+BLACK_EXTENSIONS = {".py"}
+
 FORMAT_COMMANDS = {
     ".cpp": CLANG_FORMAT,
     ".ipp": CLANG_FORMAT,
@@ -225,11 +228,64 @@ def file_is_generated(text):
     return False
 
 
+def run_clang_format_bulk(files, check_only, silent):
+    """Run clang-format on all C/C++/Java files in a single invocation."""
+    if not files:
+        return []
+    if not silent:
+        print(f"clang-format: processing {len(files)} file(s)")
+    if check_only:
+        cmd = CLANG_FORMAT + ["--dry-run", "--Werror"] + files
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(result.stderr)
+            return files
+        return []
+    else:
+        cmd = CLANG_FORMAT + ["-i"] + files
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print("clang-format failed:")
+            print(result.stderr)
+            sys.exit(1)
+        return []
+
+
+def run_black_bulk(directories, check_only, silent):
+    """Run black on the given directories in a single invocation."""
+    if not directories:
+        return []
+    if not silent:
+        print(f"black: processing directories {directories}")
+    if check_only:
+        cmd = BLACK_FORMAT + ["--check", "--diff"] + directories
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            if result.stdout:
+                print(result.stdout)
+            if result.stderr:
+                print(result.stderr)
+            # Return a sentinel so callers know black found differences
+            return [".py files"]
+        return []
+    else:
+        cmd = BLACK_FORMAT + directories
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print("black failed:")
+            print(result.stderr)
+            sys.exit(1)
+        return []
+
+
 def format_file(full_path, check_only, force, silent):
     ext = "." + full_path.split(".")[-1] if "." in full_path.split("/")[-1] else ""
     if ext in IGNORED_EXTENSIONS:
         return
     if ext not in FORMAT_COMMANDS:
+        return
+    # clang-format and black are handled in bulk; skip them here
+    if ext in CLANG_EXTENSIONS or ext in BLACK_EXTENSIONS:
         return
     if not silent:
         print(full_path)
@@ -237,11 +293,7 @@ def format_file(full_path, check_only, force, silent):
     with open(full_path, "r", encoding="utf-8") as f:
         original = f.read()
 
-    if file_is_generated(original) and ext != ".py":
-        return
-
     if check_only:
-        cmd = None
         if ext in (".test", ".test_slow", ".test_coverage", ".benchmark"):
             with open(full_path, "r", encoding="utf-8") as f:
                 original_lines = f.readlines()
@@ -249,84 +301,20 @@ def format_file(full_path, check_only, force, silent):
             if formatted is None:
                 print(f"Failed to format {full_path}: {status}")
                 sys.exit(1)
-            stderr = ""
-        elif ext == ".py":
-            cmd = FORMAT_COMMANDS[ext] + ["-", "--stdin-filename", full_path]
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-            formatted, stderr = process.communicate(input=original)
-            formatted = formatted or ""
         else:
             cmd = FORMAT_COMMANDS[ext] + [full_path]
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             formatted, stderr = process.communicate()
             formatted = formatted or ""
-        if cmd and stderr:
-            print(os.getcwd())
-            print("Failed to format file " + full_path)
-            print(" ".join(cmd))
-            print(stderr)
-            sys.exit(1)
-            stderr = ""
-        elif ext == ".py":
-            cmd = FORMAT_COMMANDS[ext] + ["-", "--stdin-filename", full_path]
-            process = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-            formatted, stderr = process.communicate(input=original)
-        else:
-            cmd = FORMAT_COMMANDS[ext] + [full_path]
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            formatted, stderr = process.communicate()
-        if stderr:
-            print(os.getcwd())
-            print("Failed to format file " + full_path)
-            print(" ".join(cmd))
-            print(stderr)
-            sys.exit(1)
-        formatted = formatted.replace("\r", "")
-        formatted = re.sub(r"\n*$", "", formatted)
-        formatted += "\n"
-
-        if ext == ".hpp" and full_path.startswith("src/include"):
-            with open(full_path, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-
-            header_middle = "// " + os.path.relpath(full_path, base_dir) + "\n"
-            text = header_top + header_middle + header_bottom
-            is_old_header = True
-            for line in lines:
-                if not (line.startswith("//") or line.startswith("\n")) and is_old_header:
-                    is_old_header = False
-                if not is_old_header:
-                    text += line
-            formatted = text
-
-        if full_path.endswith("list.hpp"):
-            file_list = [
-                os.path.join(dp, f)
-                for dp, dn, filenames in os.walk("src/include")
-                for f in filenames
-                if os.path.splitext(f)[1] == ".hpp" and not f.endswith("list.hpp")
-            ]
-            file_list = [x.replace("src/include/", "") for x in file_list]
-            file_list.sort()
-            result = ""
-            for x in file_list:
-                result += '#include "%s"\n' % (x)
-            formatted = result
-
-        if ext in (".cpp", ".hpp"):
-            formatted = formatted.replace("ARGS &&...args", "ARGS &&... args")
+            if stderr:
+                print(os.getcwd())
+                print("Failed to format file " + full_path)
+                print(" ".join(cmd))
+                print(stderr)
+                sys.exit(1)
+            formatted = formatted.replace("\r", "")
+            formatted = re.sub(r"\n*$", "", formatted)
+            formatted += "\n"
 
         if original != formatted:
             print("----------------------------------------")
@@ -352,10 +340,7 @@ def format_file(full_path, check_only, force, silent):
             with open(full_path, "w", encoding="utf-8") as f:
                 f.write(formatted)
         else:
-            if ext == ".py":
-                cmd = FORMAT_COMMANDS[ext] + [full_path]
-            else:
-                cmd = FORMAT_COMMANDS[ext] + ["-i", full_path]
+            cmd = FORMAT_COMMANDS[ext] + ["-i", full_path]
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.stderr:
                 print(os.getcwd())
@@ -363,44 +348,6 @@ def format_file(full_path, check_only, force, silent):
                 print(" ".join(cmd))
                 print(result.stderr)
                 sys.exit(1)
-
-        if ext == ".hpp" and full_path.startswith("src/include"):
-            with open(full_path, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-
-            header_middle = "// " + os.path.relpath(full_path, base_dir) + "\n"
-            text = header_top + header_middle + header_bottom
-            is_old_header = True
-            for line in lines:
-                if not (line.startswith("//") or line.startswith("\n")) and is_old_header:
-                    is_old_header = False
-                if not is_old_header:
-                    text += line
-
-            with open(full_path, "w", encoding="utf-8") as f:
-                f.write(text)
-
-        if full_path.endswith("list.hpp"):
-            file_list = [
-                os.path.join(dp, f)
-                for dp, dn, filenames in os.walk("src/include")
-                for f in filenames
-                if os.path.splitext(f)[1] == ".hpp" and not f.endswith("list.hpp")
-            ]
-            file_list = [x.replace("src/include/", "") for x in file_list]
-            file_list.sort()
-            result = ""
-            for x in file_list:
-                result += '#include "%s"\n' % (x)
-            with open(full_path, "w", encoding="utf-8") as f:
-                f.write(result)
-
-        if ext in (".cpp", ".hpp"):
-            with open(full_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            content = content.replace("ARGS &&...args", "ARGS &&... args")
-            with open(full_path, "w", encoding="utf-8") as f:
-                f.write(content)
 
 
 def main():
@@ -461,6 +408,21 @@ def main():
 
     difference_files = []
 
+    # Partition files: clang-format and black run in bulk; everything else per-file
+    clang_files = [f for f in files if ("." + f.split(".")[-1] if "." in f.split("/")[-1] else "") in CLANG_EXTENSIONS]
+    black_files = [f for f in files if ("." + f.split(".")[-1] if "." in f.split("/")[-1] else "") in BLACK_EXTENSIONS]
+    other_files = [f for f in files if f not in clang_files and f not in black_files]
+
+    # Run clang-format in a single bulk invocation
+    difference_files += run_clang_format_bulk(clang_files, check_only, silent)
+
+    # Run black in a single bulk invocation
+    if format_all:
+        difference_files += run_black_bulk(formatted_dirs, check_only, silent)
+    elif black_files:
+        difference_files += run_black_bulk(black_files, check_only, silent)
+
+    # Process remaining file types (cmake-format, test formatter) per-file
     def process_file(f):
         try:
             result = format_file(f, check_only, force, silent)
@@ -472,7 +434,7 @@ def main():
 
     with concurrent.futures.ThreadPoolExecutor() as executor:
         try:
-            threads = [executor.submit(process_file, f) for f in files]
+            threads = [executor.submit(process_file, f) for f in other_files]
             concurrent.futures.wait(threads)
         except KeyboardInterrupt:
             executor.shutdown(wait=True, cancel_futures=True)
