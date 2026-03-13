@@ -489,8 +489,8 @@ toolsci:
 	g++ --version
 
 format_tools:
-	$(call ensure_apt_commands,ninja clang-format,ninja-build clang-format-11)
-	sudo pip3 install cmake-format 'black==24.*' cxxheaderparser pcpp 'clang_format==11.0.1'
+	$(call ensure_apt_commands,ninja clang-format,ninja-build clang-format-20)
+	sudo pip3 install cmake-format 'black==26.3.0' cxxheaderparser pcpp 'clang_format==20.1.7'
 
 benchmark:
 	mkdir -p ./build/release && \
