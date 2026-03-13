@@ -3,6 +3,7 @@
 //
 // duckdb/optimizer/rule/list_comprehension_rewrite.hpp
 //
+//
 //===----------------------------------------------------------------------===//
 
 #pragma once

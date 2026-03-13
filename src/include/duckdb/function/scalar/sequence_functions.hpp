@@ -18,7 +18,8 @@ namespace duckdb {
 struct CurrvalFun {
 	static constexpr const char *Name = "currval";
 	static constexpr const char *Parameters = "'sequence_name'";
-	static constexpr const char *Description = "Return the current value of the sequence. Note that nextval must be called at least once prior to calling currval.";
+	static constexpr const char *Description = "Return the current value of the sequence. Note that nextval must be "
+	                                           "called at least once prior to calling currval.";
 	static constexpr const char *Example = "currval('my_sequence_name')";
 	static constexpr const char *Categories = "";
 

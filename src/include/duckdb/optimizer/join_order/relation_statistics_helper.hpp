@@ -1,10 +1,11 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/optimizer/join_order/statistics_extractor.hpp
+// duckdb/optimizer/join_order/relation_statistics_helper.hpp
 //
 //
 //===----------------------------------------------------------------------===//
+
 #pragma once
 
 #include "duckdb/planner/filter/conjunction_filter.hpp"

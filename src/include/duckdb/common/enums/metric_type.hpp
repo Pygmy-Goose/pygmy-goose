@@ -108,9 +108,9 @@ enum class MetricType : uint8_t {
 };
 
 struct MetricTypeHashFunction {
-    uint64_t operator()(const MetricType &index) const {
-        return std::hash<uint8_t>()(static_cast<uint8_t>(index));
-    }
+	uint64_t operator()(const MetricType &index) const {
+		return std::hash<uint8_t>()(static_cast<uint8_t>(index));
+	}
 };
 
 typedef unordered_set<MetricType, MetricTypeHashFunction> profiler_settings_t;
@@ -122,7 +122,6 @@ public:
 	static constexpr uint8_t END_OPTIMIZER = static_cast<uint8_t>(MetricType::OPTIMIZER_OUTER_JOIN_SIMPLIFICATION);
 
 public:
-
 	// All metrics
 	static profiler_settings_t GetAllMetrics();
 	static profiler_settings_t GetMetricsByGroupType(MetricGroup type);

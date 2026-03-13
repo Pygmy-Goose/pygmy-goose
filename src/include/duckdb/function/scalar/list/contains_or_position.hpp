@@ -1,3 +1,11 @@
+//===----------------------------------------------------------------------===//
+//                         DuckDB
+//
+// duckdb/function/scalar/list/contains_or_position.hpp
+//
+//
+//===----------------------------------------------------------------------===//
+
 #pragma once
 #include "duckdb/function/create_sort_key.hpp"
 #include "duckdb/common/operator/comparison_operators.hpp"

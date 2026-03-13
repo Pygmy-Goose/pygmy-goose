@@ -50,7 +50,8 @@ void CTENode::Serialize(Serializer &serializer) const {
 	serializer.WritePropertyWithDefault<unique_ptr<QueryNode>>(201, "query", query);
 	serializer.WritePropertyWithDefault<unique_ptr<QueryNode>>(202, "child", child);
 	serializer.WritePropertyWithDefault<vector<string>>(203, "aliases", aliases);
-	serializer.WritePropertyWithDefault<CTEMaterialize>(204, "materialized", materialized, CTEMaterialize::CTE_MATERIALIZE_DEFAULT);
+	serializer.WritePropertyWithDefault<CTEMaterialize>(204, "materialized", materialized,
+	                                                    CTEMaterialize::CTE_MATERIALIZE_DEFAULT);
 }
 
 unique_ptr<QueryNode> CTENode::Deserialize(Deserializer &deserializer) {
@@ -59,7 +60,8 @@ unique_ptr<QueryNode> CTENode::Deserialize(Deserializer &deserializer) {
 	deserializer.ReadPropertyWithDefault<unique_ptr<QueryNode>>(201, "query", result->query);
 	deserializer.ReadPropertyWithDefault<unique_ptr<QueryNode>>(202, "child", result->child);
 	deserializer.ReadPropertyWithDefault<vector<string>>(203, "aliases", result->aliases);
-	deserializer.ReadPropertyWithExplicitDefault<CTEMaterialize>(204, "materialized", result->materialized, CTEMaterialize::CTE_MATERIALIZE_DEFAULT);
+	deserializer.ReadPropertyWithExplicitDefault<CTEMaterialize>(204, "materialized", result->materialized,
+	                                                             CTEMaterialize::CTE_MATERIALIZE_DEFAULT);
 	return std::move(result);
 }
 
@@ -89,7 +91,8 @@ void SelectNode::Serialize(Serializer &serializer) const {
 	serializer.WritePropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(200, "select_list", select_list);
 	serializer.WritePropertyWithDefault<unique_ptr<TableRef>>(201, "from_table", from_table);
 	serializer.WritePropertyWithDefault<unique_ptr<ParsedExpression>>(202, "where_clause", where_clause);
-	serializer.WritePropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(203, "group_expressions", groups.group_expressions);
+	serializer.WritePropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(203, "group_expressions",
+	                                                                          groups.group_expressions);
 	serializer.WritePropertyWithDefault<vector<GroupingSet>>(204, "group_sets", groups.grouping_sets);
 	serializer.WriteProperty<AggregateHandling>(205, "aggregate_handling", aggregate_handling);
 	serializer.WritePropertyWithDefault<unique_ptr<ParsedExpression>>(206, "having", having);
@@ -102,7 +105,8 @@ unique_ptr<QueryNode> SelectNode::Deserialize(Deserializer &deserializer) {
 	deserializer.ReadPropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(200, "select_list", result->select_list);
 	deserializer.ReadPropertyWithDefault<unique_ptr<TableRef>>(201, "from_table", result->from_table);
 	deserializer.ReadPropertyWithDefault<unique_ptr<ParsedExpression>>(202, "where_clause", result->where_clause);
-	deserializer.ReadPropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(203, "group_expressions", result->groups.group_expressions);
+	deserializer.ReadPropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(203, "group_expressions",
+	                                                                           result->groups.group_expressions);
 	deserializer.ReadPropertyWithDefault<vector<GroupingSet>>(204, "group_sets", result->groups.grouping_sets);
 	deserializer.ReadProperty<AggregateHandling>(205, "aggregate_handling", result->aggregate_handling);
 	deserializer.ReadPropertyWithDefault<unique_ptr<ParsedExpression>>(206, "having", result->having);
@@ -128,7 +132,8 @@ unique_ptr<QueryNode> SetOperationNode::Deserialize(Deserializer &deserializer) 
 	auto right = deserializer.ReadPropertyWithDefault<unique_ptr<QueryNode>>(202, "right");
 	auto setop_all = deserializer.ReadPropertyWithExplicitDefault<bool>(203, "setop_all", true);
 	auto children = deserializer.ReadPropertyWithDefault<vector<unique_ptr<QueryNode>>>(204, "children");
-	auto result = duckdb::unique_ptr<SetOperationNode>(new SetOperationNode(setop_type, std::move(left), std::move(right), std::move(children), setop_all));
+	auto result = duckdb::unique_ptr<SetOperationNode>(
+	    new SetOperationNode(setop_type, std::move(left), std::move(right), std::move(children), setop_all));
 	return std::move(result);
 }
 

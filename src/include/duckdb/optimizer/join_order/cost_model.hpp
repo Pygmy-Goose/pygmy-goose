@@ -5,6 +5,7 @@
 //
 //
 //===----------------------------------------------------------------------===//
+
 #pragma once
 
 #include "duckdb/optimizer/join_order/join_node.hpp"

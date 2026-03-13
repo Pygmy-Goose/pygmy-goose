@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/catalog/catalog_entry/macro_catalog_entry.hpp
+// duckdb/catalog/catalog_entry/scalar_macro_catalog_entry.hpp
 //
 //
 //===----------------------------------------------------------------------===//

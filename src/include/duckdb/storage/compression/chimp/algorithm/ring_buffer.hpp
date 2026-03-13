@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/storage/compression/chimp/ring_buffer.hpp
+// duckdb/storage/compression/chimp/algorithm/ring_buffer.hpp
 //
 //
 //===----------------------------------------------------------------------===//

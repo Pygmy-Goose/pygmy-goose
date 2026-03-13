@@ -1,3 +1,11 @@
+//===----------------------------------------------------------------------===//
+//                         DuckDB
+//
+// duckdb/parser/tableref/list.hpp
+//
+//
+//===----------------------------------------------------------------------===//
+
 #include "duckdb/parser/tableref/basetableref.hpp"
 #include "duckdb/parser/tableref/bound_ref_wrapper.hpp"
 #include "duckdb/parser/tableref/emptytableref.hpp"

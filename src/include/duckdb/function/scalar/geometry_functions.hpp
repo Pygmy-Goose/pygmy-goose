@@ -29,7 +29,8 @@ struct StAswkbFun {
 	static constexpr const char *Name = "st_aswkb";
 	static constexpr const char *Parameters = "geom";
 	static constexpr const char *Description = "Returns the Well-Known Binary (WKB) representation of the geometry";
-	static constexpr const char *Example = "st_aswkb(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000000'))";
+	static constexpr const char *Example =
+	    "st_aswkb(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000000'))";
 	static constexpr const char *Categories = "geometry";
 
 	static ScalarFunction GetFunction();
@@ -45,7 +46,8 @@ struct StAstextFun {
 	static constexpr const char *Name = "st_astext";
 	static constexpr const char *Parameters = "geom";
 	static constexpr const char *Description = "Returns the Well-Known Text (WKT) representation of the geometry";
-	static constexpr const char *Example = "ST_AsText(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000'))";
+	static constexpr const char *Example =
+	    "ST_AsText(ST_GeomFromWKB(X'01010000000000000000000000000000000000000000000000'))";
 	static constexpr const char *Categories = "geometry";
 
 	static ScalarFunction GetFunction();
@@ -76,7 +78,8 @@ struct StIntersectsExtentFunAlias {
 struct StCrsFun {
 	static constexpr const char *Name = "st_crs";
 	static constexpr const char *Parameters = "geom";
-	static constexpr const char *Description = "Returns the Coordinate Reference System (CRS) identifier of the geometry";
+	static constexpr const char *Description =
+	    "Returns the Coordinate Reference System (CRS) identifier of the geometry";
 	static constexpr const char *Example = "";
 	static constexpr const char *Categories = "geometry";
 

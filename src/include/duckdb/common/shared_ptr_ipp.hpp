@@ -1,3 +1,11 @@
+//===----------------------------------------------------------------------===//
+//                         DuckDB
+//
+// duckdb/common/shared_ptr_ipp.hpp
+//
+//
+//===----------------------------------------------------------------------===//
+
 #pragma once
 
 #include "duckdb/common/compatible_with_ipp.hpp"
@@ -159,24 +167,21 @@ public:
 #ifdef DUCKDB_CLANG_TIDY
 	[[clang::reinitializes]]
 #endif
-	void
-	reset() { // NOLINT: invalid case style
+	void reset() { // NOLINT: invalid case style
 		internal.reset();
 	}
 	template <typename U>
 #ifdef DUCKDB_CLANG_TIDY
 	[[clang::reinitializes]]
 #endif
-	void
-	reset(U *ptr) { // NOLINT: invalid case style
+	void reset(U *ptr) { // NOLINT: invalid case style
 		internal.reset(ptr);
 	}
 	template <typename U, typename DELETER>
 #ifdef DUCKDB_CLANG_TIDY
 	[[clang::reinitializes]]
 #endif
-	void
-	reset(U *ptr, DELETER deleter) { // NOLINT: invalid case style
+	void reset(U *ptr, DELETER deleter) { // NOLINT: invalid case style
 		internal.reset(ptr, deleter);
 	}
 

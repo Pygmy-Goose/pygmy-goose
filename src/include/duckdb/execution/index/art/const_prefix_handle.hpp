@@ -5,6 +5,7 @@
 //
 //
 //===----------------------------------------------------------------------===//
+
 #pragma once
 
 #include "duckdb/execution/index/fixed_size_allocator.hpp"

@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/storage/compression/chimp/output_bit_stream.hpp
+// duckdb/storage/compression/chimp/algorithm/output_bit_stream.hpp
 //
 //
 //===----------------------------------------------------------------------===//

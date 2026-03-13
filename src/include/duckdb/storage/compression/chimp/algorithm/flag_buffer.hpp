@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/storage/compression/chimp/flag_buffer.hpp
+// duckdb/storage/compression/chimp/algorithm/flag_buffer.hpp
 //
 //
 //===----------------------------------------------------------------------===//

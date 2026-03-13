@@ -41,7 +41,7 @@
 
 typedef struct _linenoiseCompletions {
 	void *internal_ptr;
-} * linenoiseCompletions;
+} *linenoiseCompletions;
 
 #ifdef __cplusplus
 extern "C" {

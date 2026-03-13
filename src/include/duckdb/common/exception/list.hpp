@@ -1,3 +1,11 @@
+//===----------------------------------------------------------------------===//
+//                         DuckDB
+//
+// duckdb/common/exception/list.hpp
+//
+//
+//===----------------------------------------------------------------------===//
+
 #include "duckdb/common/exception/binder_exception.hpp"
 #include "duckdb/common/exception/catalog_exception.hpp"
 #include "duckdb/common/exception/conversion_exception.hpp"

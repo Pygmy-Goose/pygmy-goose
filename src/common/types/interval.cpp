@@ -131,7 +131,7 @@ interval_parse_number:
 		}
 	}
 	goto end_of_string;
-interval_parse_time : {
+interval_parse_time: {
 	// parse the remainder of the time as a Time type
 	dtime_t time;
 	idx_t pos;

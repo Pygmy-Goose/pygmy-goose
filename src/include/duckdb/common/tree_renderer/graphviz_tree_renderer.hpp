@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/common/graphviz_tree_renderer.hpp
+// duckdb/common/tree_renderer/graphviz_tree_renderer.hpp
 //
 //
 //===----------------------------------------------------------------------===//

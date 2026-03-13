@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/optimizer/build_side_probe_side_optimizer.hpp
+// duckdb/optimizer/build_probe_side_optimizer.hpp
 //
 //
 //===----------------------------------------------------------------------===//

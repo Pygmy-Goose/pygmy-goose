@@ -6,9 +6,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Bind annotated mutex and lock type with standard implementation, so that
-// duckdb::annotated_unique_lock<duckdb::annotated_mutex> could inherit std::unique_lock<std::mutex>.
-
 #pragma once
 
 #include <mutex>

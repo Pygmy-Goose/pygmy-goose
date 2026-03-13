@@ -13,12 +13,13 @@ using namespace duckdb_yyjson; // NOLINT
 namespace duckdb {
 
 static string OperatorToString(const Value &val) {
-    const auto type = static_cast<PhysicalOperatorType>(val.GetValue<uint8_t>());
-    return EnumUtil::ToString(type);
+	const auto type = static_cast<PhysicalOperatorType>(val.GetValue<uint8_t>());
+	return EnumUtil::ToString(type);
 }
 
 template <class METRIC_TYPE>
-static void AggregateMetric(ProfilingNode &node, MetricType aggregated_metric, MetricType child_metric, const std::function<METRIC_TYPE(const METRIC_TYPE &, const METRIC_TYPE &)> &update_fun) {
+static void AggregateMetric(ProfilingNode &node, MetricType aggregated_metric, MetricType child_metric,
+                            const std::function<METRIC_TYPE(const METRIC_TYPE &, const METRIC_TYPE &)> &update_fun) {
 	auto &info = node.GetProfilingInfo();
 	info.metrics[aggregated_metric] = info.metrics[child_metric];
 
@@ -51,7 +52,7 @@ static Value GetCumulativeOptimizers(ProfilingNode &node) {
 }
 
 void ProfilingUtils::SetMetricToDefault(profiler_metrics_t &metrics, const MetricType &type) {
-	switch(type) {
+	switch (type) {
 	case MetricType::ALL_OPTIMIZERS:
 	case MetricType::ATTACH_LOAD_STORAGE_LATENCY:
 	case MetricType::ATTACH_REPLAY_WAL_LATENCY:
@@ -101,8 +102,9 @@ void ProfilingUtils::SetMetricToDefault(profiler_metrics_t &metrics, const Metri
 	}
 }
 
-void ProfilingUtils::MetricToJson(duckdb_yyjson::yyjson_mut_doc *doc, duckdb_yyjson::yyjson_mut_val *dest, const char *key_ptr,  profiler_metrics_t &metrics, const MetricType &type) {
-	switch(type) {
+void ProfilingUtils::MetricToJson(duckdb_yyjson::yyjson_mut_doc *doc, duckdb_yyjson::yyjson_mut_val *dest,
+                                  const char *key_ptr, profiler_metrics_t &metrics, const MetricType &type) {
+	switch (type) {
 	case MetricType::ALL_OPTIMIZERS:
 	case MetricType::ATTACH_LOAD_STORAGE_LATENCY:
 	case MetricType::ATTACH_REPLAY_WAL_LATENCY:
@@ -151,8 +153,9 @@ void ProfilingUtils::MetricToJson(duckdb_yyjson::yyjson_mut_doc *doc, duckdb_yyj
 	}
 }
 
-void ProfilingUtils::CollectMetrics(const MetricType &type, QueryMetrics &query_metrics, Value &metric, ProfilingNode &node, ProfilingInfo &child_info) {
-	switch(type) {
+void ProfilingUtils::CollectMetrics(const MetricType &type, QueryMetrics &query_metrics, Value &metric,
+                                    ProfilingNode &node, ProfilingInfo &child_info) {
+	switch (type) {
 	case MetricType::CPU_TIME:
 		GetCumulativeMetric<double>(node, MetricType::CPU_TIME, MetricType::OPERATOR_TIMING);
 		break;
@@ -212,4 +215,4 @@ void ProfilingUtils::CollectMetrics(const MetricType &type, QueryMetrics &query_
 	}
 }
 
-}
+} // namespace duckdb

@@ -284,7 +284,9 @@ TEST_CASE("Test appender during stack unwinding", "[api]") {
 		appender.AppendRow(1);
 
 		REQUIRE_NO_FAIL(con.Query("ALTER TABLE integers ADD COLUMN j VARCHAR"));
-		{ throw std::runtime_error("Hello"); }
+		{
+			throw std::runtime_error("Hello");
+		}
 	} catch (...) {
 	}
 }

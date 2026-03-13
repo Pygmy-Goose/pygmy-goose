@@ -1,3 +1,11 @@
+//===----------------------------------------------------------------------===//
+//                         DuckDB
+//
+// duckdb/optimizer/rule/list.hpp
+//
+//
+//===----------------------------------------------------------------------===//
+
 #include "duckdb/optimizer/rule/arithmetic_simplification.hpp"
 #include "duckdb/optimizer/rule/case_simplification.hpp"
 #include "duckdb/optimizer/rule/constant_order_normalization.hpp"

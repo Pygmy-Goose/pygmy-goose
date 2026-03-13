@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/parser/parsed_data/create_collation_info.hpp
+// duckdb/parser/parsed_data/create_coordinate_system_info.hpp
 //
 //
 //===----------------------------------------------------------------------===//

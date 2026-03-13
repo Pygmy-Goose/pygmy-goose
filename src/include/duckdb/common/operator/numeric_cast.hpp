@@ -6,10 +6,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-//! NOTE: This file should not be included directly.
-//! NOTE: When included directly, this file produces 'unused static method' warnings/errors.
-//! NOTE: The methods in this file should be used through the TryCast:: methods defined in 'cast_operators.hpp'.
-
 #pragma once
 
 #include "duckdb/common/operator/cast_operators.hpp"

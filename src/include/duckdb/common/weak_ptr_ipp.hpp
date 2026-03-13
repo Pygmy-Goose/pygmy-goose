@@ -1,3 +1,11 @@
+//===----------------------------------------------------------------------===//
+//                         DuckDB
+//
+// duckdb/common/weak_ptr_ipp.hpp
+//
+//
+//===----------------------------------------------------------------------===//
+
 #pragma once
 
 #include "duckdb/common/shared_ptr_ipp.hpp"
@@ -68,8 +76,7 @@ public:
 	// This is necessary to tell clang-tidy that it reinitializes the variable after a move
 	[[clang::reinitializes]]
 #endif
-	void
-	reset() { // NOLINT: invalid case style
+	void reset() { // NOLINT: invalid case style
 		internal.reset();
 	}
 

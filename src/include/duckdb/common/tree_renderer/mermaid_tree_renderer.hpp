@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/common/mermaid_tree_renderer.hpp
+// duckdb/common/tree_renderer/mermaid_tree_renderer.hpp
 //
 //
 //===----------------------------------------------------------------------===//

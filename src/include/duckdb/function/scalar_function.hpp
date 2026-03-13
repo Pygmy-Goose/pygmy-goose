@@ -228,7 +228,7 @@ public:
 		function_info = std::move(info);
 	}
 	template <class T, class... ARGS>
-	void SetExtraFunctionInfo(ARGS &&... args) {
+	void SetExtraFunctionInfo(ARGS &&...args) {
 		function_info = make_shared_ptr<T>(std::forward<ARGS>(args)...);
 	}
 

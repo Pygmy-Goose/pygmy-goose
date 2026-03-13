@@ -1295,7 +1295,7 @@ bool Linenoise::TryGetKeyPress(int fd, KeyPress &key_press) {
 				break;
 			default:
 				continue; // in raw mode, ReadConsoleInput shows shift, ctrl ...
-			}             //  ... ignore them
+			} //  ... ignore them
 			if (key_press.action != KEY_NULL) {
 				// add the key press to the list of key presses
 				key_presses.emplace_back(key_press);

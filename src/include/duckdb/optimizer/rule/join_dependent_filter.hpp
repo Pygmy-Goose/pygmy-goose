@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/optimizer/rule/join_filter_derivation.hpp
+// duckdb/optimizer/rule/join_dependent_filter.hpp
 //
 //
 //===----------------------------------------------------------------------===//

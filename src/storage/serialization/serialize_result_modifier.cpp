@@ -48,12 +48,14 @@ unique_ptr<BoundOrderModifier> BoundOrderModifier::Deserialize(Deserializer &des
 
 void DistinctModifier::Serialize(Serializer &serializer) const {
 	ResultModifier::Serialize(serializer);
-	serializer.WritePropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(200, "distinct_on_targets", distinct_on_targets);
+	serializer.WritePropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(200, "distinct_on_targets",
+	                                                                          distinct_on_targets);
 }
 
 unique_ptr<ResultModifier> DistinctModifier::Deserialize(Deserializer &deserializer) {
 	auto result = duckdb::unique_ptr<DistinctModifier>(new DistinctModifier());
-	deserializer.ReadPropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(200, "distinct_on_targets", result->distinct_on_targets);
+	deserializer.ReadPropertyWithDefault<vector<unique_ptr<ParsedExpression>>>(200, "distinct_on_targets",
+	                                                                           result->distinct_on_targets);
 	return std::move(result);
 }
 

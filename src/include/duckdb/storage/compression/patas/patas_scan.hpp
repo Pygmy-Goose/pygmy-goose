@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         DuckDB
 //
-// duckdb/common/storage/compression/patas/patas_scan.hpp
+// duckdb/storage/compression/patas/patas_scan.hpp
 //
 //
 //===----------------------------------------------------------------------===//

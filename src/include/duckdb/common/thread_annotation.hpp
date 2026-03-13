@@ -6,10 +6,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-// Thread annotatio which enables clang thread safety analysis, a C++ language extension which warns about potential
-// race conditions in code. The analysis is completely static (i.e. compile-time); there is no run-time overhead. For
-// more information, please refer to: https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#reference-guide
-
 #pragma once
 
 #include "duckdb/common/thread_annotation/thread_annotation.hpp"
