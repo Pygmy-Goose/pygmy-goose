@@ -820,6 +820,13 @@ function(add_third_party NAME)
     add_subdirectory(${_DUCKDB_PROJECT_SRC_DIR}/third_party/${NAME} ${_DUCKDB_PROJECT_BIN_DIR}/third_party/${NAME})
 endfunction()
 
+# This is necessary for Windows builds to work correctly, but was a part of
+# extension/extension_build_tools.cmake, which has been removed
+if(${EXPORT_DLL_SYMBOLS})
+    # For Windows DLL export symbols
+    add_definitions(-DDUCKDB_BUILD_LIBRARY)
+endif()
+
 if(PREBUILT_BINARY)
   message("Using pre-built static library from file ${PREBUILT_BINARY}")
   add_library(duckdb_static STATIC IMPORTED GLOBAL)
