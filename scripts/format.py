@@ -234,20 +234,46 @@ def run_clang_format_bulk(files, check_only, silent):
         return []
     if not silent:
         print(f"clang-format: processing {len(files)} file(s)")
+
+    def chunk_files(file_list, base_len, max_len):
+        chunks = []
+        current = []
+        current_len = base_len
+        for path in file_list:
+            entry_len = len(path) + 1
+            if current and (current_len + entry_len) > max_len:
+                chunks.append(current)
+                current = []
+                current_len = base_len
+            current.append(path)
+            current_len += entry_len
+        if current:
+            chunks.append(current)
+        return chunks
+
+    # Windows CreateProcess has a command line length limit; chunk to avoid WinError 206.
+    base_cmd = CLANG_FORMAT + (["--dry-run", "--Werror"] if check_only else ["-i"])
+    base_len = sum(len(arg) + 1 for arg in base_cmd)
+    max_len = 30000 if os.name == "nt" else 1000000
+    chunks = chunk_files(files, base_len, max_len)
+
     if check_only:
-        cmd = CLANG_FORMAT + ["--dry-run", "--Werror"] + files
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print(result.stderr)
-            return files
+        for chunk in chunks:
+            cmd = base_cmd + chunk
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode != 0:
+                if result.stderr:
+                    print(result.stderr)
+                return files
         return []
     else:
-        cmd = CLANG_FORMAT + ["-i"] + files
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            print("clang-format failed:")
-            print(result.stderr)
-            sys.exit(1)
+        for chunk in chunks:
+            cmd = base_cmd + chunk
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode != 0:
+                print("clang-format failed:")
+                print(result.stderr)
+                sys.exit(1)
         return []
 
 
