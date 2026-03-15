@@ -53,6 +53,13 @@ jobs:
         run: |
           make release
 
-      - name: Test
+      - name: Test (Linux and Mac)
+        if: runner.os != 'Windows'
         run: |
           make unittest_release
+
+      - name: Test (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          build/release/test/unittest.exe
