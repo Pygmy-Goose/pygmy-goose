@@ -21,6 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup ccache
+        if: runner.os != 'Windows'
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ci-${{ runner.os }}-${{ github.ref }}
@@ -28,6 +29,12 @@ jobs:
           restore-keys: |
             ci-${{ runner.os }}-refs/heads/main
             ci-${{ runner.os }}-
+
+      - name: Setup sccache (Windows)
+        if: runner.os == 'Windows'
+        uses: mozilla-actions/sccache-action@v0.0.6
+        env:
+          SCCACHE_GHA_ENABLED: "true"
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v7
@@ -45,13 +52,24 @@ jobs:
         run: |
           powershell.exe -Command "Add-MpPreference -ExclusionPath '${{ github.workspace }}'"
 
-      - name: Build
+      - name: Build (Linux and Mac)
+        if: runner.os != 'Windows'
         env:
           CMAKE_C_COMPILER_LAUNCHER: ccache
           CMAKE_CXX_COMPILER_LAUNCHER: ccache
-          GENERATOR: ninja
+          GEN: ninja
         run: |
           make release
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        env:
+          CMAKE_C_COMPILER_LAUNCHER: sccache
+          CMAKE_CXX_COMPILER_LAUNCHER: sccache
+          GEN: ninja
+        run: |
+          make release
+          sccache --show-stats
 
       - name: Test (Linux and Mac)
         if: runner.os != 'Windows'
