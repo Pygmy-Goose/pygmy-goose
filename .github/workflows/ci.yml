@@ -47,11 +47,6 @@ jobs:
       - name: Format Check
         run: make format-check
 
-      - name: Windows set exclusions on path checking
-        if: runner.os == 'Windows'
-        run: |
-          powershell.exe -Command "Add-MpPreference -ExclusionPath '${{ github.workspace }}'"
-
       - name: Build (Linux and Mac)
         if: runner.os != 'Windows'
         env:
@@ -63,11 +58,14 @@ jobs:
 
       - name: Build (Windows)
         if: runner.os == 'Windows'
+        shell: cmd
         env:
           CMAKE_C_COMPILER_LAUNCHER: sccache
           CMAKE_CXX_COMPILER_LAUNCHER: sccache
           GEN: ninja
         run: |
+          powershell.exe -Command "Add-MpPreference -ExclusionPath '${{ github.workspace }}'"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           make release
           sccache --show-stats
 
