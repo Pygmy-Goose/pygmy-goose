@@ -33,8 +33,17 @@ jobs:
       - name: Setup sccache (Windows)
         if: runner.os == 'Windows'
         uses: mozilla-actions/sccache-action@v0.0.6
-        env:
-          SCCACHE_GHA_ENABLED: "true"
+
+      - name: Cache sccache (Windows)
+        if: runner.os == 'Windows'
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}\.sccache
+          key: sccache-${{ runner.os }}-${{ github.ref }}-${{ github.run_id }}
+          restore-keys: |
+            sccache-${{ runner.os }}-${{ github.ref }}-
+            sccache-${{ runner.os }}-refs/heads/main-
+            sccache-${{ runner.os }}-
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v7
@@ -63,11 +72,11 @@ jobs:
           CMAKE_C_COMPILER_LAUNCHER: sccache
           CMAKE_CXX_COMPILER_LAUNCHER: sccache
           GEN: ninja
+          SCCACHE_DIR: ${{ github.workspace }}\.sccache
         run: |
           powershell.exe -Command "Add-MpPreference -ExclusionPath '${{ github.workspace }}'"
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           make release
-          sccache --show-stats
 
       - name: Test (Linux and Mac)
         if: runner.os != 'Windows'
