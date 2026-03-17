@@ -8,7 +8,7 @@
 <br>
 
 <p align="center">
-  <a href="https://github.com/Pygmy-Goose/pygmy-goose/actions"><img src="https://github.com/Pygmy-Goose/pygmy-goose/actions/workflows/Main.yml/badge.svg?branch=main" alt="Github Actions Badge"></a>
+  <a href="https://github.com/Pygmy-Goose/pygmy-goose/actions"><img src="https://github.com/Pygmy-Goose/pygmy-goose/actions/workflows/ci.yml/badge.svg?branch=main" alt="Github Actions Badge"></a>
   <a href="https://discord.gg/693MqX2jke"><img src="https://shields.io/discord/1449139160970690813" alt="discord" /></a>
   <a href="https://github.com/Pygmy-Goose/pygmy-goose/releases/"><img src="https://img.shields.io/github/v/release/Pygmy-Goose/pygmy-goose?color=brightgreen&display_name=tag&logo=duckdb&logoColor=white" alt="Latest Release"></a>
 </p>
