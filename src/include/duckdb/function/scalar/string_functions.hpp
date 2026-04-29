@@ -279,9 +279,9 @@ struct SubstringGraphemeFun {
 	    "Extracts substring starting from grapheme clusters `start` up to the end of the string. If optional argument "
 	    "`length` is set, extracts a substring of `length` grapheme clusters instead. Note that a `start` value of `1` "
 	    "refers to the `first` character of the `string`.";
-	static constexpr const char *Example =
-	    "substring_grapheme('🦆🤦🏼‍♂️🤦🏽‍♀️🦆', 3)\002substring_grapheme('🦆🤦🏼‍♂️🤦🏽‍♀️🦆', 3, "
-	    "2)";
+	static constexpr const char *Example = "substring_grapheme('🦆🤦🏼‍♂️🤦🏽‍♀️🦆', "
+	                                       "3)\002substring_grapheme('🦆🤦🏼‍♂️🤦🏽‍♀️🦆', 3, "
+	                                       "2)";
 	static constexpr const char *Categories = "string";
 
 	static ScalarFunctionSet GetFunctions();
