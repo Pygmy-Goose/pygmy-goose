@@ -60,6 +60,7 @@ on:
   push:
     branches-ignore:
       - 'main'
+      - 'agents'
       - 'feature'
       - 'v*.*-*'
     paths-ignore:
