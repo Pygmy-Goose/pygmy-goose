@@ -2,6 +2,8 @@
 # See https://pre-commit.com/hooks.html for more hooks
 # .pre-commit-config.yaml
 
+exclude: ^(\.github|benchmarks?|tests?|scripts)/|(^|/)tests?/|.*\.(json|svg|md|sh|template)$|.*\.cmake(\.in)?$|^CMakeLists\.txt$|^(\.clang-tidy|\.codecov\.yml|pyproject\.toml)$|^src/include/duckdb/function/scalar/.*_functions\.hpp$|^src/storage/serialization/serialize_.*\.cpp$|^src/include/duckdb/storage/compression/(alp|alprd)/algorithm/LICENSE$|test_rendering_mode_regression.py|null.txt$
+
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
